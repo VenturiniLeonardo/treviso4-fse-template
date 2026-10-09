@@ -1,24 +1,24 @@
-# Sicurezza
+# Security
 
-Il sito gestisce dati di minori (iscritti, consensi, fotografie): le
-segnalazioni di sicurezza sono benvenute e vengono prese sul serio.
+This application handles data about minors (members, consents, photographs).
+Security reports are welcome and taken seriously.
 
-## Come segnalare una vulnerabilità
+## Reporting a vulnerability
 
-**Non aprite una issue pubblica.** Usate la segnalazione privata di GitHub:
-scheda *Security* del repository → *Report a vulnerability*.
+**Please do not open a public issue.** Use GitHub's private reporting instead:
+the repository's *Security* tab → *Report a vulnerability*.
 
-Indicate, se potete:
+If you can, include:
 
-- che cosa si può fare e con quale ruolo (visitatore, referente di unità, …);
-- i passi per riprodurla;
-- la versione o il commit.
+- what an attacker can do, and with which role (visitor, unit lead, …);
+- the steps to reproduce it;
+- the version or commit you tested.
 
-Riceverete una risposta il prima possibile. Vi chiediamo di non divulgare il
-problema finché non è stato corretto.
+You will get an answer as soon as possible. Please do not disclose the issue
+until it has been fixed.
 
-## Che cosa non è nel repository
+## What is not in this repository
 
-Nessun segreto, nessun dato e nessuna configurazione di un server reale: le
-chiavi vanno nell'ambiente (vedi `web/.env.esempio`), e database, file caricati
-e copie di sicurezza stanno fuori da git.
+No secrets, no data and no configuration of a real server. Keys belong in the
+environment (see `web/.env.esempio`), and the database, uploaded files and
+backups are kept out of git.
