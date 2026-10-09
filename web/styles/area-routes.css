@@ -1,0 +1,2320 @@
+/* Aggiunte minime dovute a un cambio di struttura, non di disegno.
+   admin.css resta invariato: quello che serve in più sta qui.
+
+   Nel mockup le voci della colonna laterale erano `<button>` che mostravano e
+   nascondevano blocchi. Il piano (§04) chiede rotte vere, così l'indirizzo è
+   condivisibile e il tasto indietro funziona: sono diventate `<a>`. L'unica
+   conseguenza visiva è che `a:hover` di site.css ne cambierebbe il colore —
+   qui si rimette quello che avevano. */
+
+.adm-navitem:hover { color: var(--adm-body); }
+.adm-navitem[aria-current="true"],
+.adm-navitem[aria-current="true"]:hover { color: var(--adm-ink); }
+
+/* «Esci dall'area riservata» nel mockup era un collegamento alla home. Ora
+   cancella la sessione, quindi è un pulsante dentro un form: queste regole gli
+   ridanno l'aspetto che aveva accanto agli altri collegamenti. `display:
+   contents` serve perché il form non si intrometta nella colonna flex. */
+.adm-links form,
+.adm-picker__links form { display: contents; }
+
+.adm-links button,
+.adm-picker__links button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--text);
+  font-size: 13px;
+  color: var(--adm-muted);
+}
+.adm-links button { padding: 0 10px; }
+.adm-links button:hover,
+.adm-picker__links button:hover { color: var(--adm-ok-testo); }
+
+/* Guscio senza colonna laterale: lo usa la pagina «funzione non ancora attiva»,
+   che non appartiene a una sezione e quindi non ha un menu da evidenziare. */
+.adm-shell--solo { grid-template-columns: minmax(0, 1fr); }
+
+/* La ricerca in barra è un modulo GET: il contenitore non deve cambiare come
+   la barra dispone i suoi elementi, quindi si comporta come il campo che
+   contiene. */
+.adm-searchbox { display: flex; }
+
+/* Da qui in giù la casella di ricerca smette di essere rigida. I suoi 220 px
+   fissi (§ .adm-search in admin.css) andavano bene sul largo, ma a 700 px si
+   prendevano un terzo della barra e lasciavano 189 px in tutto al nome del
+   gruppo e alla pastiglia dell'unità: «TREVI…» in 47 px e «Br…» in 73, cioè
+   due etichette che non dicono più niente accanto a un campo di ricerca vuoto.
+   In una barra l'ordine è: prima si sa dove si è, poi si cerca. La casella
+   parte da 160 e può stringersi, ma non sotto 130: un campo di ricerca da 60 px
+   mostra «Cerc» e non si usa, e cedere tutto è solo l'errore opposto. Con
+   questo pavimento a 700 px il nome del gruppo torna a 99 px e la pastiglia
+   dell'unità a 111 — «ESEMPIO 1 /…» e «Unità 1 L…», che dicono ancora qualcosa,
+   con la ricerca a 130 che mostra «Cerca nella mia u…». `width: 100%` sull'input perché la
+   larghezza la decide adesso il contenitore. */
+@media (max-width: 1100px) {
+  .adm-searchbox { flex: 0 1 160px; min-width: 130px; }
+  .adm-search { width: 100%; min-width: 0; }
+}
+@media (max-width: 560px) { .adm-searchbox { flex: 1; min-width: 0; } }
+
+/* Riga della ricerca attiva, sopra le tabelle filtrate. */
+.adm-filtro {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+  font-size: 13.5px; color: var(--adm-body);
+}
+.adm-filtro strong { color: var(--adm-ink); }
+.adm-filtro a { font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+/* Tabella senza risultati: una riga sola, che non segue la griglia delle altre. */
+.adm-tr--vuota { display: block; padding: 16px; font-size: 13.5px; }
+
+/* --- Identità del gruppo ------------------------------------------------- */
+
+/* Esito di un salvataggio. Verde quando è andata, rosso quando no: sono gli
+   unici due esiti possibili, e vanno letti senza cercarli. */
+.adm-esito {
+  padding: 10px 14px;
+  border: 1px solid var(--adm-line);
+  border-left-width: 3px; border-radius: var(--adm-r);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.adm-esito--ok { border-left-color: var(--green-600); background: var(--adm-ok-fondo); color: var(--adm-ok-testo); }
+.adm-esito--ko { border-left-color: var(--red); background: var(--adm-stop-fondo); color: var(--adm-stop-testo); }
+
+/* Anteprima del marchio in uso, accanto al campo di caricamento. */
+.adm-marchio { display: flex; align-items: center; gap: 16px; }
+.adm-marchio__box {
+  display: flex; align-items: center; justify-content: center;
+  width: 76px; height: 76px; flex: none; padding: 8px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+}
+/* il marchio caricato può avere qualunque proporzione: si adatta alla casella
+   senza deformarsi, e le misure vere restano negli attributi dell'immagine */
+.adm-marchio__box img { max-width: 100%; max-height: 100%; width: auto; height: auto; display: block; }
+.adm-marchio__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.adm-marchio__nome { font-size: 14.5px; font-weight: 600; color: var(--adm-ink); }
+
+/* Il campo file non eredita gli stili degli input di testo.
+   Il bordo è quello dei comandi e non quello delle superfici: nella riga di
+   «Fotografie delle pagine» sta accanto a «Descrizione», e con `--adm-line`
+   era un gradino più chiaro del campo che gli stava a fianco. */
+/* Il campo file ha l'altezza degli altri campi e il pulsante interno quella
+   di un pulsante piccolo, centrato: prima era un pulsante di sistema
+   appoggiato in un riquadro più alto, con la scritta «nessun file» su
+   un'altra linea di base. */
+.adm-field input[type="file"] {
+  display: flex; align-items: center;
+  height: var(--adm-comando); padding: 0 5px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-bordo-comando);
+  border-radius: var(--adm-r);
+  font-family: var(--text);
+  font-size: 13.5px;
+  color: var(--adm-ink);
+}
+/* Il pulsante dentro il campo file lo disegna il sistema, e non si può
+   ridisegnare: si può però togliergli il fondo grigio, così smette di essere
+   la cosa più pesante della riga. */
+.adm-field input[type="file"]::file-selector-button {
+  height: 28px; margin-right: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--adm-bordo-comando); border-radius: 4px;
+  background: var(--adm-head);
+  font-family: var(--text); font-size: 13px; font-weight: 600;
+  color: var(--adm-ink); cursor: pointer;
+}
+.adm-field input[type="file"]::file-selector-button:hover { border-color: var(--adm-muted); }
+
+/* --- Album e fotografie -------------------------------------------------- */
+
+/* Riga di ritorno in cima all'editor di un album. */
+.adm-torna { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Ogni pulsante-azione è un <form> a sé, perché ciascuno ha la sua Server
+   Action e il suo esito. Il contenitore li tiene in riga con gli altri
+   pulsanti, e il messaggio compare sotto al proprio. */
+.adm-comando { display: inline-flex; flex-direction: column; gap: 6px; }
+.adm-comando .adm-esito { font-size: 12.5px; padding: 6px 9px; }
+
+/* Azioni dentro una riga di tabella. */
+.adm-riga-azioni { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.adm-riga-azioni .adm-btn { min-height: 30px; padding: 0 11px; font-size: 13px; }
+
+/* Provini delle fotografie caricate. */
+.adm-provini {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+}
+/* Un provino solo, non una galleria: la scatola si stringe su di lui invece
+   di aprire cinque colonne vuote (§ Immagini.tsx). `max-content` sulle righe
+   perché il piede con le misure e il pulsante non si allunghi. */
+.adm-provini--singolo {
+  /* `inline-grid` e non `grid`: così è il **riquadro** a stringersi sulla
+     fotografia, non solo la colonna dentro di lui. Con `grid` la colonna
+     diventava una sola, giusta, ma il rettangolo bianco col bordo restava
+     largo 1106 px con la fotografia nell'angolo — che è lo stesso vuoto di
+     prima, solo con un provino più grande dentro. */
+  display: inline-grid;
+  grid-template-columns: minmax(150px, 220px);
+  justify-self: start;
+  align-self: start;
+}
+
+.adm-provino { display: flex; flex-direction: column; gap: 6px; }
+.adm-provino img {
+  width: 100%; height: 120px; object-fit: cover; display: block;
+  background: var(--adm-head); border: 1px solid var(--adm-line); border-radius: 4px;
+}
+.adm-provino__piede { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.adm-provino__misure { font-family: var(--mono); font-size: 11px; color: var(--adm-label); }
+.adm-provino .adm-btn { min-height: 26px; padding: 0 9px; font-size: 12.5px; }
+
+.adm-form__actions .adm-comando .adm-btn { margin: 0; }
+
+/* Scelta dell'anno sociale nella sezione documenti. */
+.adm-anni { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* --- Editor delle righe -------------------------------------------------- */
+
+/* I comandi della tabella stanno in testa, accanto al titolo. */
+.adm-table__head { flex-wrap: wrap; }
+.adm-table__comandi { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.adm-table__comandi .adm-btn { min-height: 32px; padding: 0 12px; font-size: 13px; }
+
+/* Il modulo di inserimento/modifica sta sopra la tabella, staccato: una riga di
+   campi dentro una griglia densa non ci starebbe. */
+.adm-form--editor { border-left: 3px solid var(--adm-primario); }
+
+/* --- Scelte a radio e caselle ------------------------------------------- */
+
+.adm-scelte { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; border: 0; }
+.adm-scelte legend { padding: 0; margin-bottom: 4px; }
+.adm-scelta {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 11px; background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); cursor: pointer;
+}
+.adm-scelta:hover { border-color: var(--adm-muted); }
+.adm-scelta input { margin-top: 2px; flex: none; }
+.adm-scelta span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.adm-scelta strong { font-size: 13.5px; font-weight: 600; color: var(--adm-ink); }
+.adm-scelta em { font-style: normal; font-size: 12.5px; line-height: 1.45; color: var(--adm-muted); }
+.adm-scelta--riga { margin-top: 2px; }
+
+/* Campo che si mostra ma non si modifica. */
+.adm-field--fisso input { background: var(--adm-head); color: var(--adm-muted); }
+
+/* Nota che spiega perché una tabella è in sola lettura. */
+.adm-solalettura {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-left: 3px solid var(--adm-muted);
+  font-size: 13px; line-height: 1.5; color: var(--adm-body);
+}
+
+/* --- Matrice dei permessi ------------------------------------------------ */
+
+/* La guida in cima: i tre livelli (e il lucchetto) spiegati prima dei dati. */
+.matrice-guida {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
+}
+.matrice-guida__voce {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 10px 12px; background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+}
+.matrice-guida__voce p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--adm-body); }
+.matrice-avviso p { margin: 0; }
+
+/* Le viste: tutti i ruoli, oppure uno solo. */
+.matrice-viste {
+  display: inline-flex; flex-wrap: wrap; gap: 2px; align-self: flex-start;
+  padding: 3px; background: var(--adm-head); border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+}
+.matrice-viste__voce {
+  min-height: 32px; padding: 0 14px; border: 0; border-radius: var(--adm-r); background: none;
+  font: inherit; font-size: 13.5px; font-weight: 600; color: var(--adm-muted); cursor: pointer;
+}
+.matrice-viste__voce:hover { color: var(--adm-ink); }
+.matrice-viste__voce.is-attiva { background: var(--adm-superficie); color: var(--adm-ink); box-shadow: var(--adm-ombra); }
+
+.matrice { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--adm-superficie); }
+.matrice th, .matrice td { border-bottom: 1px solid var(--adm-line-soft); padding: 0; }
+.matrice thead th {
+  position: sticky; top: 0; z-index: 2;
+  padding: 10px 8px; background: var(--adm-head);
+  border-bottom: 1px solid var(--adm-line);
+  text-align: center; vertical-align: bottom;
+}
+.matrice thead th:first-child {
+  text-align: left; padding-left: 16px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+.matrice__ruolo { display: block; font-size: 13.5px; font-weight: 700; color: var(--adm-ink); }
+.matrice__ruolo-nota { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 400; color: var(--adm-muted); }
+
+/* La prima colonna resta ferma quando la griglia scorre di lato. */
+.matrice tbody th[scope="row"] {
+  position: sticky; left: 0; z-index: 1; background: var(--adm-superficie);
+  width: 32%; min-width: 200px; padding: 12px 16px; text-align: left; vertical-align: middle;
+}
+.matrice__nome { display: block; font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--adm-ink); }
+.matrice__spiega { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; line-height: 1.45; color: var(--adm-muted); }
+
+.matrice__gruppo th {
+  position: sticky; left: 0;
+  padding: 18px 16px 8px; background: var(--adm-superficie);
+  border-bottom: 1px solid var(--adm-line);
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--adm-accento); text-align: left;
+}
+.matrice tbody:first-of-type .matrice__gruppo th { padding-top: 12px; }
+.matrice tbody td { text-align: center; vertical-align: middle; padding: 6px 4px; min-width: 108px; }
+.matrice tbody tr:not(.matrice__gruppo):hover th[scope="row"],
+.matrice tbody tr:not(.matrice__gruppo):hover td { background: var(--adm-hover); }
+.matrice tbody:last-of-type tr:last-child th, .matrice tbody:last-of-type tr:last-child td { border-bottom: 0; }
+
+.matrice__cella { display: flex; align-items: center; justify-content: center; }
+.matrice__tasto {
+  display: flex; align-items: center; justify-content: center;
+  padding: 3px; border: 0; border-radius: 999px; background: none; cursor: pointer; font: inherit;
+}
+.matrice__tasto .matrice__chip { transition: box-shadow 0.12s ease, transform 0.12s ease; }
+.matrice__tasto:hover .matrice__chip { box-shadow: 0 0 0 2px var(--adm-bordo-forte); }
+.matrice__tasto:focus-visible { outline: 2px solid var(--adm-accento); outline-offset: 1px; }
+.matrice__tasto:disabled { opacity: 0.55; cursor: progress; }
+.matrice__tasto--ko .matrice__chip { box-shadow: 0 0 0 2px var(--adm-stop-bordo); }
+
+/* Il segno e la parola nello stesso gettone. I tre livelli si distinguono per
+   segno **e** per colore: chi non distingue i colori legge comunque ✓, ~ e ✗. */
+.matrice__chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 150px;
+  padding: 4px 10px 4px 4px; border: 1px solid transparent; border-radius: 14px;
+  font-size: 12.5px; font-weight: 600; line-height: 1.25; text-align: left; text-wrap: balance;
+}
+.matrice__segno {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  font-size: 12px; font-weight: 800; line-height: 1;
+}
+.matrice__chip--completo { background: var(--adm-ok-fondo); border-color: var(--adm-ok-bordo); color: var(--adm-ok-testo); }
+.matrice__chip--completo .matrice__segno { background: var(--adm-ok-testo); color: var(--adm-superficie); }
+.matrice__chip--limitato { background: var(--adm-wait-fondo); border-color: var(--adm-wait-bordo); color: var(--adm-wait-testo); }
+.matrice__chip--limitato .matrice__segno { background: var(--adm-wait-testo); color: var(--adm-superficie); }
+.matrice__chip--nessuno { background: transparent; border-color: var(--adm-line); color: var(--adm-muted); }
+.matrice__chip--nessuno .matrice__segno { background: var(--adm-head); color: var(--adm-muted); }
+.matrice__lucchetto { flex: none; margin-left: 2px; color: var(--adm-label); opacity: 0.8; }
+.matrice-guida .matrice__chip--nessuno .matrice__lucchetto { margin-left: 6px; }
+
+/* «Togli riga»: un comando raro e distruttivo, quindi discreto. */
+.matrice__togli { margin-top: 4px; }
+.matrice__togli button {
+  min-height: 24px; margin-left: -6px; padding: 0 6px; border: 0; border-radius: var(--adm-r); background: none;
+  font: inherit; font-size: 12.5px; color: var(--adm-muted); white-space: nowrap; cursor: pointer;
+}
+.matrice__togli button:hover { color: var(--adm-stop-testo); background: var(--adm-stop-fondo); }
+/* si vede passando sulla riga o con la tastiera; al tocco resta sempre visibile */
+@media (hover: hover) {
+  .matrice tbody tr .matrice__togli button { opacity: 0; }
+  .matrice tbody tr:hover .matrice__togli button,
+  .matrice__togli button:focus-visible { opacity: 1; }
+}
+
+/* La vista di un ruolo solo: elenco, non griglia. */
+.matrice-ruolo { display: flex; flex-direction: column; gap: 18px; }
+.matrice-ruolo__sintesi { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 14px; color: var(--adm-body); }
+.matrice-ruolo__sintesi strong { color: var(--adm-ink); }
+.matrice-ruolo__conto { padding: 2px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+.matrice-ruolo__conto--completo { background: var(--adm-ok-fondo); color: var(--adm-ok-testo); }
+.matrice-ruolo__conto--limitato { background: var(--adm-wait-fondo); color: var(--adm-wait-testo); }
+.matrice-ruolo__conto--nessuno { background: var(--adm-head); color: var(--adm-muted); }
+.matrice-ruolo__gruppo h3 {
+  margin: 0 0 6px; font-family: var(--text); font-size: 11.5px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--adm-accento);
+}
+.matrice-ruolo__gruppo ul {
+  margin: 0; padding: 0; list-style: none;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+}
+.matrice-ruolo__gruppo li {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 11px 14px; border-top: 1px solid var(--adm-line-soft);
+}
+.matrice-ruolo__gruppo li:first-child { border-top: 0; }
+.matrice-ruolo__gruppo li .matrice__chip { max-width: 220px; }
+
+@media (max-width: 700px) {
+  .matrice tbody th[scope="row"] { min-width: 170px; padding: 10px 12px; }
+  .matrice__spiega { display: none; }
+  .matrice-ruolo__gruppo li { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .matrice-ruolo__gruppo .matrice__spiega { display: block; }
+}
+
+/* --- Preferenze di visualizzazione --------------------------------------- */
+
+/* Le tre preferenze del pannello profilo. Sono classi sul body, non stili in
+   linea: la resa la decide il foglio di stile, non il componente. */
+.vista-compatta .adm-tr { padding-top: 7px; padding-bottom: 7px; }
+.vista-compatta .adm-table { gap: 8px; }
+
+.vista-grande { font-size: 17px; }
+.vista-grande .adm-tr, .vista-grande .adm-field input, .vista-grande .adm-field select { font-size: 15px; }
+.vista-grande .adm-note, .vista-grande .adm-field__hint { font-size: 14.5px; }
+.vista-grande .adm-title { font-size: 28px; }
+
+/* ## E le dashboard, che sono arrivate dopo
+   «Grande» promette «un paio di punti in più ovunque» (§ lib/preferenze.ts), e
+   fino a qui *ovunque* saltava le tre schermate che ogni ruolo apre per prime:
+   le dashboard hanno una scala tipografica loro — `.adm-dash__*` — e le sei
+   regole qui sopra non la toccano. Chi accendeva la preferenza vedeva crescere
+   il titolo da 25 a 28 px e poi, sotto, tutto uguale a prima.
+
+   La scelta di che cosa cresce è la stessa delle righe qui sopra, e non è
+   «tutto»: cresce il testo che si **legge** — le etichette degli indicatori, le
+   note, i titoli dei riquadri, i nomi nelle liste. Non crescono le pastiglie
+   monospazio da 10,5 px né i numeri grandi: le prime sono didascalie che il
+   valore accanto spiega già, i secondi sono a 32 px e non è lì che si fatica.
+
+   Se un domani si aggiunge una misura a `.adm-dash__*`, va aggiunta anche qui:
+   è il costo di una preferenza che elenca invece di moltiplicare, ed è lo
+   stesso costo che le sei righe sopra pagano da sempre. */
+.vista-grande .adm-dash__check-desc { font-size: 13px; }
+.vista-grande .adm-dash__kpi-meta,
+.vista-grande .adm-dash__section-subtitle,
+.vista-grande .adm-dash__event-note,
+.vista-grande .adm-dash__kpi-link,
+.vista-grande .adm-dash__unit-details,
+.vista-grande .adm-dash__event-details { font-size: 14px; }
+.vista-grande .adm-dash__check-label,
+.vista-grande .adm-dash__timeline-op,
+.vista-grande .adm-dash__action-btn,
+.vista-grande .adm-dash__empty-muted { font-size: 14.5px; }
+.vista-grande .adm-dash__kpi-label { font-size: 15px; }
+.vista-grande .adm-dash__hero-sub,
+.vista-grande .adm-dash__unit-name,
+.vista-grande .adm-dash__empty p { font-size: 15.5px; }
+.vista-grande .adm-dash__event-title { font-size: 16.5px; }
+.vista-grande .adm-dash__section-title { font-size: 19.5px; }
+
+.vista-ferma *, .vista-ferma *::before, .vista-ferma *::after {
+  animation-duration: .001ms !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* --- Menu del profilo ---------------------------------------------------- */
+
+.adm-profilo { position: relative; }
+.adm-profilo__tasto {
+  display: flex; align-items: center; gap: 9px;
+  cursor: pointer; list-style: none; padding: 3px 4px 3px 8px; border-radius: 3px;
+}
+.adm-profilo__tasto::-webkit-details-marker { display: none; }
+.adm-profilo__tasto:hover { background: rgba(255, 255, 255, 0.1); }
+.adm-profilo__freccia { font-size: 10px; color: rgba(255, 255, 255, 0.6); }
+.adm-profilo[open] .adm-profilo__freccia { transform: rotate(180deg); }
+
+.adm-profilo__menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 40;
+  min-width: 250px; display: flex; flex-direction: column;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line);
+  box-shadow: 0 10px 30px rgba(0, 24, 47, 0.18);
+}
+.adm-profilo__testa {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 14px; background: var(--adm-head);
+  border-bottom: 1px solid var(--adm-line);
+}
+.adm-profilo__testa strong { font-size: 14px; color: var(--adm-ink); }
+.adm-profilo__testa span { font-size: 12.5px; color: var(--adm-muted); }
+
+.adm-profilo__voce {
+  display: block; width: 100%; text-align: left;
+  padding: 10px 14px; background: none; border: 0;
+  border-bottom: 1px solid var(--adm-line-soft);
+  font: inherit; font-size: 13.5px; color: var(--adm-ink); cursor: pointer;
+}
+.adm-profilo__voce:hover { background: var(--adm-head); color: var(--adm-ok-testo); }
+.adm-profilo__voce--esci { border-bottom: 0; color: var(--adm-stop-testo); }
+
+@media (max-width: 560px) {
+  .adm-profilo__tasto { padding-left: 4px; }
+  .adm-profilo__menu { right: -8px; min-width: 220px; }
+}
+
+/* --- Registro delle operazioni ------------------------------------------ */
+
+/* I filtri sono collegamenti, non pulsanti: l'indirizzo dice che cosa si sta
+   guardando, e il tasto indietro torna al filtro precedente. */
+/* Le righe di filtri: etichetta e pastiglie centrate sulla stessa linea
+   (con `baseline` l'etichetta in maiuscoletto e le pastiglie non ci
+   stavano: diverso corpo, diversa linea), e pastiglie arrotondate alte 30,
+   che si leggono come comandi e non come caselle di una tabella. */
+.adm-filtri {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 18px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+  box-shadow: var(--adm-ombra);
+}
+.adm-filtri__riga { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.adm-filtri__etichetta {
+  width: 86px; flex: none;
+  font-family: var(--text); font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--adm-label);
+}
+.adm-pillfiltro {
+  display: inline-flex; align-items: center;
+  height: 30px; padding: 0 12px;
+  border: 1px solid var(--adm-line); border-radius: 999px;
+  font-size: 13px; color: var(--adm-body);
+  white-space: nowrap;
+}
+.adm-pillfiltro:hover { border-color: var(--adm-muted); color: var(--adm-ink); }
+.adm-pillfiltro.is-attivo {
+  background: var(--adm-primario); border-color: var(--adm-primario); color: #fff;
+}
+.adm-pillfiltro.is-attivo:hover { color: #fff; }
+
+/* Un tentativo rifiutato si vede senza doverlo cercare. */
+.adm-tr--rifiutata { background: var(--adm-stop-fondo); }
+.adm-tr--rifiutata .c-strong { color: var(--adm-stop-testo); }
+
+@media (max-width: 700px) {
+  /* Al telefono l'etichetta va **sopra** le pastiglie: i suoi 78 px fissi si
+     mangiavano un quinto della larghezza. Questo era già l'intento, ma era
+     scritto mettendo in colonna tutta la riga — e così si impilavano anche le
+     pastiglie, una per riga. Nel filtro «chi» del registro erano quattro righe
+     per 410 px di pastiglie in un contenitore da 338: ne bastavano due.
+     `width: 100%` sull'etichetta fa la stessa cosa senza il danno: con il
+     `flex-wrap: wrap` che la riga ha già, l'etichetta si prende la prima riga
+     da sola e le pastiglie scorrono sotto, andando a capo quando serve. */
+  .adm-filtri__riga { align-items: flex-start; gap: 6px; }
+  .adm-filtri__etichetta { width: 100%; }
+}
+
+/* --- Coda di approvazione ------------------------------------------------ */
+
+/* Non è una tabella: sono decisioni da prendere, e ognuna vuole spazio per
+   mostrare che cosa si sta approvando prima dei pulsanti. */
+.adm-coda { display: flex; flex-direction: column; gap: 12px; }
+
+.adm-coda__voce {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 16px 18px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line);
+  border-left: 4px solid var(--yellow); border-radius: var(--adm-r-box);
+  box-shadow: var(--adm-ombra);
+}
+
+.adm-coda__testa { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.adm-coda__testa h3 {
+  margin: 0; font-family: var(--text); font-size: 18px; font-weight: 700;
+  letter-spacing: -0.01em; color: var(--adm-ink);
+}
+.adm-coda__tipo {
+  padding: 2px 9px;
+  background: var(--adm-head); border: 1px solid var(--adm-line); border-radius: 999px;
+  font-family: var(--text); font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--adm-label);
+}
+.adm-coda__meta { font-size: 13px; color: var(--adm-muted); }
+.adm-coda__anteprima { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--adm-body); }
+
+/* Il riquadro dei consensi: è la ragione per cui questa schermata esiste, e
+   sta prima dei pulsanti perché va letto prima di premerli. */
+.adm-coda__consensi {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 10px 13px;
+  background: var(--adm-head);
+  border-left: 3px solid var(--green-600);
+  font-size: 13.5px; color: var(--adm-body);
+}
+.adm-coda__consensi--attenzione { background: var(--adm-wait-fondo); border-left-color: var(--yellow); }
+.adm-coda__consensi-titolo {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--adm-label);
+}
+/* I nomi di chi non ha il consenso, e il confronto prima/dopo di una
+   modifica. La classe c'era nel markup — tre volte in `Coda.tsx` — e non
+   nel foglio: quelle righe uscivano col corpo del riquadro, 13,5 px nello
+   stesso grigio della prosa intorno. Sono i due contenuti su cui si decide
+   se approvare, e vanno letti come dati e non come discorso: monospazio,
+   inchiostro pieno, e un filo di fondo che li stacca dal paragrafo.
+
+   `<s>` dentro il confronto è quello che c'era prima: si smorza, perché la
+   riga che conta è quella che resta. */
+.adm-coda__consensi-numero {
+  padding: 6px 8px;
+  border-radius: 3px;
+  /* nel tema scuro il bianco al 72% stava sotto un inchiostro chiaro: il testo
+     del confronto, quello che chi approva deve leggere, spariva */
+  background: light-dark(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.06));
+  font-family: var(--mono); font-size: 12px; line-height: 1.55;
+  color: var(--adm-ink);
+  overflow-wrap: anywhere;
+}
+.adm-coda__consensi-numero strong {
+  font-family: var(--text); font-size: 12.5px;
+  letter-spacing: 0.02em; color: var(--adm-label);
+}
+.adm-coda__consensi-numero s { color: var(--adm-label); text-decoration-thickness: 1px; }
+
+.adm-coda__consensi-nota { font-size: 12.5px; line-height: 1.5; color: var(--adm-muted); }
+
+.adm-coda__azioni {
+  display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.adm-coda__vuota {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 26px 22px;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line);
+  text-align: center; align-items: center;
+}
+.adm-coda__vuota strong { font-size: 16px; color: var(--adm-ink); }
+.adm-coda__vuota span {
+  max-width: 62ch; font-size: 14px; line-height: 1.55; color: var(--adm-muted);
+}
+
+/* ==========================================================================
+   Dashboard moderna per Area Riservata (Referente Unità & Referente Gruppo)
+   ========================================================================== */
+
+.adm-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* --- Hero banner di benvenuto --- */
+
+.adm-dash__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 22px 26px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line);
+  border-left: 6px solid var(--adm-primario);
+  border-radius: var(--adm-r-box);
+  box-shadow: 0 2px 8px rgba(0, 24, 47, 0.04);
+}
+
+.adm-dash__hero--group {
+  border-left-color: var(--adm-primario);
+  background: linear-gradient(135deg, var(--adm-superficie) 0%, var(--adm-superficie-fredda) 100%);
+}
+
+.adm-dash__hero-main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.adm-dash__hero-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--adm-superficie);
+  border: 2px solid var(--adm-line);
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 24, 47, 0.08);
+}
+
+.adm-dash__hero-badge--group {
+  border-color: var(--adm-primario);
+}
+
+.adm-dash__hero-logo {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.adm-dash__hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.adm-dash__hero-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adm-dash__pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-family: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.adm-dash__pill--dark {
+  background: var(--adm-primario);
+  color: #ffffff;
+}
+
+.adm-dash__pill--gold {
+  background: #ffcc00;
+  color: #002144;
+}
+
+.adm-dash__pill--outline {
+  border: 1px solid var(--adm-line);
+  color: var(--adm-muted);
+  background: var(--adm-head);
+}
+
+.adm-dash__pill--warn {
+  background: var(--adm-wait-fondo);
+  border: 1px solid var(--adm-wait-bordo);
+  color: var(--adm-wait-testo);
+}
+
+/* Le tre pastiglie di esito della dashboard di sistema. Sono i colori che il
+   resto dell'area usa già per le stesse tre parole (§ .adm-pill di admin.css):
+   verde «a posto», giallo «in attesa», rosso «bloccato». Un cruscotto che si
+   inventa la propria tavolozza costringe a impararla due volte. */
+.adm-dash__pill--esito-ok {
+  background: var(--adm-ok-fondo);
+  border: 1px solid var(--adm-ok-bordo);
+  color: var(--adm-ok-testo);
+}
+
+.adm-dash__pill--esito-aperto {
+  background: var(--adm-wait-fondo);
+  border: 1px solid var(--adm-wait-bordo);
+  color: var(--adm-wait-testo);
+}
+
+.adm-dash__pill--esito-guasto {
+  background: var(--adm-stop-fondo);
+  border: 1px solid var(--adm-stop-bordo);
+  color: var(--adm-stop-testo);
+}
+
+.adm-dash__hero-title {
+  font-family: var(--text);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--adm-ink);
+  margin: 0;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.adm-dash__hero-sub {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--adm-muted);
+  line-height: 1.5;
+}
+
+.adm-dash__hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adm-dash__btn-accent {
+  background: var(--adm-primario) !important;
+  color: #ffffff !important;
+  border-color: var(--adm-primario) !important;
+  font-weight: 600;
+}
+
+.adm-dash__btn-accent:hover {
+  background: var(--adm-primario-premuto) !important;
+}
+
+/* --- Griglia KPI / Indicatori --- */
+
+.adm-dash__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.adm-dash__kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-box);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-dash__kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 24, 47, 0.08);
+  border-color: var(--adm-bordo-forte);
+}
+
+.adm-dash__kpi-card--alert {
+  border-left: 4px solid var(--yellow);
+  background: linear-gradient(180deg, var(--adm-superficie) 0%, var(--adm-wait-velo) 100%);
+}
+
+.adm-dash__kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Il posto dell'icona in testa alla scheda. Non è più un carattere ma un SVG
+   (§ components/area/Icone.tsx), quindi `font-size` non la misura: la misura
+   arriva dal componente e qui serve solo la scatola che la centra.
+   Il colore è il navy degli accenti, non uno dei colori di stato: in questa
+   interfaccia giallo, rosso e verde vogliono dire «in attesa», «bloccato», «a
+   posto», e un'icona decorativa non deve prendersi una di quelle parole. */
+.adm-dash__kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--adm-accento);
+}
+
+.adm-dash__kpi-tag {
+  font-family: var(--text);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-label);
+}
+
+.adm-dash__kpi-number {
+  font-family: var(--text);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--adm-ink);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.adm-dash__kpi-number--alert {
+  color: var(--adm-wait-testo);
+}
+
+.adm-dash__kpi-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-dash__kpi-meta {
+  font-size: 12.5px;
+  color: var(--adm-muted);
+  line-height: 1.45;
+  min-height: 36px;
+}
+
+.adm-dash__kpi-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--adm-accento);
+  text-decoration: none;
+}
+
+.adm-dash__kpi-link:hover {
+  color: var(--adm-ok-testo);
+  text-decoration: underline;
+}
+
+/* --- Barra Scorciatoie Azioni Rapide --- */
+
+/* L'etichetta va **sopra** i pulsanti, non a fianco. A fianco, appena i
+   pulsanti andavano a capo — sei nella dashboard di gruppo, a 1440 px — la
+   seconda riga ne portava uno solo, e l'etichetta restava centrata a metà
+   altezza fra le due: né allineata alla prima riga né alla seconda. */
+.adm-dash__quickbar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 16px 20px 18px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-box);
+  box-shadow: var(--adm-ombra);
+}
+
+.adm-dash__quickbar-title {
+  font-family: var(--text);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--adm-label);
+  white-space: nowrap;
+}
+
+.adm-dash__quickbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.adm-dash__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--adm-comando);
+  padding: 0 14px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--adm-ink);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.adm-dash__action-btn:hover {
+  background: var(--adm-superficie);
+  border-color: var(--adm-primario);
+  color: var(--adm-accento);
+  box-shadow: 0 2px 8px rgba(0, 24, 47, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Lo stesso, dentro i pulsanti delle azioni rapide: l'icona sta a sinistra
+   della scritta e si tiene un passo indietro rispetto al testo — il grigio
+   medio, non il navy — perché lì la parola è il comando e l'icona è solo
+   l'appoggio per ritrovarlo a colpo d'occhio. */
+.adm-dash__action-symbol {
+  display: inline-flex;
+  align-items: center;
+  color: var(--adm-muted);
+}
+.adm-dash__action-btn:hover .adm-dash__action-symbol { color: var(--adm-accento); }
+
+/* --- Due Colonne Principali --- */
+
+.adm-dash__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.adm-dash__col-main,
+.adm-dash__col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.adm-dash__section-box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--adm-superficie);
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-box);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.adm-dash__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--adm-line-soft);
+}
+
+.adm-dash__section-title {
+  font-family: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--adm-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.adm-dash__section-subtitle {
+  display: block;
+  font-size: 13px;
+  color: var(--adm-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+/* --- Lista Eventi in Calendario --- */
+
+.adm-dash__event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adm-dash__event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.adm-dash__event-item:hover {
+  background: var(--adm-superficie);
+  border-color: var(--adm-bordo-forte);
+  box-shadow: 0 3px 10px rgba(0, 24, 47, 0.05);
+}
+
+.adm-dash__event-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.adm-dash__event-dow {
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.adm-dash__event-day {
+  font-family: var(--text);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 2px 0;
+}
+
+.adm-dash__event-month {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.adm-dash__event-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.adm-dash__event-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adm-dash__event-title {
+  font-family: var(--text);
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--adm-ink);
+  margin: 0;
+}
+
+.adm-dash__event-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--adm-muted);
+}
+
+.adm-dash__event-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adm-dash__event-detail--tipo {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.adm-dash__event-note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--adm-body);
+  line-height: 1.45;
+}
+
+.adm-dash__event-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Il pulsante nella testata di un riquadro e quelli sotto una scheda: uno
+   solo, piccolo e di contorno. Prima nelle testate ce n'erano tre — pieno
+   navy, bianco da 34, bianco da 28 — secondo la schermata; e `height` non
+   poteva vincere sul `min-height` del pulsante, quindi quello «piccolo» non
+   lo era. */
+.adm-dash__btn-sm,
+.adm-dash__section-head > .adm-btn {
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  flex: none;
+}
+/* «Copertina: caricata» nella scheda dell'unità: era in monospazio da 13 fra
+   righe di testo da 12,5, e usciva dalla riga più grande delle voci accanto. */
+.adm-dash__copertina { font-weight: 600; color: var(--adm-muted); }
+.adm-dash__copertina svg { display: inline; vertical-align: -1px; margin-right: 2px; }
+.adm-dash__copertina--ok { color: var(--adm-ok-testo); }
+
+/* --- Checklist Stato Unità --- */
+
+.adm-dash__checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-dash__check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-radius: 4px;
+}
+
+.adm-dash__check-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.adm-dash__check-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.adm-dash__check-status--ok {
+  background: var(--adm-ok-fondo);
+  color: var(--adm-ok-testo);
+}
+
+/* `--aperto` è lo stesso giallo di `--warn`: la dashboard di unità chiama
+   «warn» quello che la dashboard di sistema chiama «aperto», ed è la stessa
+   cosa — qualcosa che non è rotto ma non è a posto. Due nomi e un solo colore,
+   invece di due dichiarazioni che possono divergere. */
+.adm-dash__check-status--warn,
+.adm-dash__check-status--aperto {
+  background: var(--adm-wait-fondo);
+  color: var(--adm-wait-testo);
+}
+
+.adm-dash__check-status--guasto {
+  background: var(--adm-stop-fondo);
+  color: var(--adm-stop-testo);
+}
+
+/* Il valore misurato, a destra della riga. In monospazio perché è un dato —
+   `wal`, `5000 ms`, `320 KB` — e i dati in questa interfaccia sono monospazio
+   (§ l'intestazione di admin.css). `tabular-nums` così una colonna di numeri
+   incolonna le cifre invece di ballare. */
+.adm-dash__check-valore {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--adm-ink);
+  text-align: right;
+}
+
+.adm-dash__check-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--adm-ink);
+}
+
+.adm-dash__check-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--adm-muted);
+  margin-top: 1px;
+}
+
+.adm-dash__check-action {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--adm-accento);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.adm-dash__check-action:hover {
+  color: var(--adm-ok-testo);
+  text-decoration: underline;
+}
+
+/* --- Timeline Attività Recenti --- */
+
+.adm-dash__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.adm-dash__timeline-item {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--adm-line-soft);
+}
+
+.adm-dash__timeline-item:last-child {
+  border-bottom: none;
+}
+
+.adm-dash__timeline-time {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--adm-label);
+  width: 85px;
+  flex-shrink: 0;
+}
+
+.adm-dash__timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.adm-dash__timeline-op {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--adm-ink);
+  line-height: 1.35;
+}
+
+.adm-dash__timeline-sec {
+  font-family: var(--text);
+  font-size: 12.5px;
+  color: var(--adm-muted);
+}
+
+/* --- Griglia 6 Unità per Referente Gruppo --- */
+
+.adm-dash__units-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.adm-dash__unit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-top: 3px solid;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.adm-dash__unit-card:hover {
+  background: var(--adm-superficie);
+  border-color: var(--adm-bordo-forte);
+  box-shadow: 0 4px 12px rgba(0, 24, 47, 0.05);
+}
+
+.adm-dash__unit-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adm-dash__unit-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.adm-dash__unit-name {
+  font-family: var(--text);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--adm-ink);
+  margin: 0;
+}
+
+.adm-dash__unit-branch {
+  font-family: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+}
+
+.adm-dash__unit-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12.5px;
+  color: var(--adm-body);
+  border-top: 1px solid var(--adm-line-soft);
+  padding-top: 8px;
+}
+
+.adm-dash__unit-meta-label {
+  color: var(--adm-label);
+}
+
+.adm-dash__unit-links {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* --- Stati Vuoti / Informativi --- */
+
+.adm-dash__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 32px 20px;
+  background: var(--adm-head);
+  border: 1px dashed var(--adm-line);
+  border-radius: 6px;
+}
+
+.adm-dash__empty p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--adm-muted);
+}
+
+.adm-dash__empty-muted {
+  padding: 16px 4px;
+  font-size: 13.5px;
+  color: var(--adm-muted);
+  line-height: 1.5;
+}
+
+.adm-dash__empty-muted p {
+  margin: 0 0 4px;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-dash__empty-ok {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 24px 18px;
+  background: var(--adm-ok-fondo);
+  border: 1px solid var(--adm-ok-bordo);
+  border-radius: 6px;
+}
+
+.adm-dash__empty-icon {
+  display: inline-flex;
+  color: var(--adm-ok-testo);
+}
+
+.adm-dash__empty-ok strong {
+  font-size: 15px;
+  color: var(--adm-ok-testo);
+}
+
+.adm-dash__empty-ok span {
+  font-size: 13px;
+  color: var(--adm-body);
+  max-width: 36ch;
+}
+
+.adm-dash__coda-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adm-dash__coda-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.adm-dash__coda-item strong {
+  color: var(--adm-ink);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-dash__coda-meta {
+  font-family: var(--text);
+  font-size: 12.5px;
+  color: var(--adm-label);
+}
+
+.adm-dash__btn-block {
+  width: 100% !important;
+  text-align: center;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+/* --- Media Queries Responsive --- */
+
+@media (max-width: 1100px) {
+  .adm-dash__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .adm-dash__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  /* ## `align-self: stretch` non è un dettaglio
+     In colonna l'asse trasversale è quello orizzontale, e `align-items:
+     flex-start` fa misurare ogni figlio sul proprio contenuto — la sua
+     larghezza «max-content». Fin quando dentro la testata c'era solo del testo
+     che va a capo non si notava; con un contenuto che non può andare a capo
+     salta fuori. La dashboard di sistema mostra il percorso del database in
+     monospazio e senza referenti (§ .adm-dash__percorso, ed è giusto così: la sua
+     utilità è il finale), e a 501 px quella riga ha portato il blocco a 453 px
+     dentro una testata da 368, uscendo di 117 px dal fondo scuro fino al bordo
+     dello schermo.
+     Con `stretch` e `min-width: 0` i figli prendono la larghezza della
+     testata, e chi non ci sta si arrangia dentro — a capo se può, con lo
+     scorrimento se non può. Vale per tutte e tre le dashboard: le altre due
+     non ci inciampavano per fortuna, non per costruzione. */
+  .adm-dash__hero {
+    flex-direction: column;
+    align-items: stretch;
+    /* `nowrap` è la riga che fa funzionare `stretch`, e da sola non era
+       bastata. Sul largo la testata è una riga che va a capo — marchio e
+       pulsanti, `wrap` serve — ma un contenitore `flex` **in colonna e con
+       `wrap`** è multi-riga sull'asse orizzontale: ogni riga si dimensiona sul
+       proprio contenuto, e la larghezza della scatola non la limita, la
+       traversa. Ecco perché `align-items: stretch` non stringeva niente: non
+       c'era niente a cui stringersi. In colonna la testata è una sola
+       colonna, quindi `nowrap`, e allora `stretch` clampa i figli ai 368 px
+       della scatola e `min-width: 0` li lascia stringere. */
+    flex-wrap: nowrap;
+  }
+  .adm-dash__hero-main {
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+  .adm-dash__hero-text { min-width: 0; max-width: 100%; }
+  /* Tre pastiglie in fila non ci stanno in 368 px: vanno a capo invece di
+     spingere fuori il blocco che le contiene. */
+  .adm-dash__hero-pills { flex-wrap: wrap; }
+  .adm-dash__hero-actions { align-self: flex-start; }
+  .adm-dash__kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adm-dash__units-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adm-dash__event-item {
+    flex-direction: column;
+  }
+  .adm-dash__event-date {
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
+    padding: 6px 12px;
+  }
+  .adm-dash__event-day {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+/* ==========================================================================
+   Dashboard di sistema (sviluppatore)
+   § components/area/DashboardSviluppatore.tsx
+
+   Riusa quasi tutto dalle altre due — `adm-dash__hero`, `__kpis`,
+   `__section-box`, `__checklist`, `__timeline` — e aggiunge quello che
+   nessuna delle due ha: la testata scura, i tre riquadri dei controlli in
+   riga, l'inventario del database, le barre dei permessi.
+   ========================================================================== */
+
+/* --- La testata --------------------------------------------------------- */
+
+/* --- Il denominatore negli indicatori ----------------------------------- */
+
+/* --- I tre riquadri dei controlli --------------------------------------- */
+
+/* Affiancati, non in colonna: i tre gruppi si guardano in momenti diversi e
+   messi uno sotto l'altro il terzo finisce sotto la piega. `1fr` uguali perché
+   nessuno dei tre è più importante degli altri — quale conti di più lo dice il
+   giorno, non il disegno. */
+.adm-dash__controlli {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+/* Titolo di gruppo con la sua icona. */
+.adm-dash__gruppo-titolo {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+}
+.adm-dash__gruppo-icona {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: var(--adm-head);
+  border: 1px solid var(--adm-line);
+  color: var(--adm-accento);
+}
+
+/* Nei riquadri dei controlli le righe sono strette: la nota va a capo, e il
+   valore a destra non deve schiacciarla. */
+.adm-dash__controlli .adm-dash__check-row { align-items: flex-start; }
+.adm-dash__controlli .adm-dash__check-info { align-items: flex-start; }
+.adm-dash__controlli .adm-dash__check-valore { padding-top: 2px; max-width: 40%; }
+
+/* Il tipo di operazione, a destra di ogni riga del registro. */
+.adm-dash__timeline-tipo {
+  flex-shrink: 0;
+  font-family: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--adm-label);
+  white-space: nowrap;
+}
+
+/* --- L'inventario del database ------------------------------------------ */
+
+/* --- Ai formati stretti -------------------------------------------------- */
+
+@media (max-width: 1240px) {
+  /* Tre riquadri da 380 px non ci stanno più: due sopra e uno sotto è
+     meglio di tre feritoie in cui la nota va a capo a ogni parola. */
+  .adm-dash__controlli { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .adm-dash__controlli { grid-template-columns: minmax(0, 1fr); }
+  /* Il valore torna sotto la nota invece di stringerla: su una colonna sola
+     lo spazio in orizzontale è finito. */
+  .adm-dash__controlli .adm-dash__check-row { flex-wrap: wrap; }
+  .adm-dash__controlli .adm-dash__check-valore { max-width: 100%; padding-left: 36px; }
+}
+
+/* --- Misura da dito ------------------------------------------------------
+   L'area riservata non si rompe sul telefono: a 320 px nessuna delle sue
+   diciassette schermate sfonda di lato, le tabelle si impilano in schede
+   (§ admin.css, `max-width: 900px`) e la colonna laterale diventa una tendina.
+   Si rompe *al tocco*. Misurato a 320 px, prima di questo blocco:
+
+     campo di modulo   38 px      pulsante            34
+     ricerca in barra  30         pulsante in riga    26 · 28 · 24
+     casella           17         pastiglia filtro    27
+     cella permessi    38         «Apri» in checklist 22 × 19
+
+   Sono 63 comandi sotto i 44 px nel calendario, 78 nella matrice permessi, e
+   sette per schermata scendono sotto i 24 × 24 che sono il *minimo* di WCAG
+   2.5.8 — non l'obiettivo, il minimo. Il sito pubblico questo passaggio l'ha
+   fatto (§ site.css: `.field input { min-height: 48px }`, `.btn { min-height:
+   48px }` sotto i 780 px); l'area no, ed è la metà dove si lavora — un referente
+   che carica le foto del campo o segna un'uscita lo fa dal telefono, non dalla
+   scrivania.
+
+   Perché 44 e non 48 come nel sito pubblico: là il pulsante è solo in mezzo al
+   testo di una pagina, qui i comandi stanno in fila dentro righe e barre, e
+   quattro pixel per comando su una schermata che ne ha sessanta sono due
+   schermi di scorrimento in più. 44 è la misura di Apple e il minimo di
+   Android; sotto non si scende.
+
+   Le misure decorative restano quelle che sono — il marchio dell'unità a 38,
+   il segno della matrice a 26, il pallino di stato a 24: non si toccano, e
+   ingrandirli sarebbe solo rumore. */
+
+/* Lo zoom di iOS non guarda la larghezza della finestra ma il dito: un campo
+   con il testo sotto i 16 px, quando prende il fuoco, fa ingrandire la pagina
+   a Safari, che poi resta ingrandita e va rimessa a mano. Nell'area sono tutti
+   sotto — 14,5 px i campi, 13 la ricerca: undici campi su undici in «Nome e
+   marchio», otto su otto nel calendario. Sedici è la soglia esatta, non un
+   arrotondamento. Sta in `pointer: coarse` e non in una larghezza perché
+   dipende dal dispositivo di puntamento: un iPad in orizzontale è largo 1024
+   px e zooma comunque. */
+@media (pointer: coarse) {
+  .adm-field input,
+  .adm-field select,
+  .adm-field textarea,
+  .adm-comando select,
+  /* La tendina che *è* la navigazione dell'area sul telefono (§ admin.css,
+     `.adm-picker select`): 44 px di altezza l'aveva già, i 15 px di testo la
+     lasciavano comunque fra quelle che fanno zoomare. */
+  .adm-picker select,
+  .adm-search { font-size: 16px; }
+}
+
+/* Da qui in giù è la stessa soglia a cui l'area passa già al suo assetto
+   stretto (§ admin.css, `.adm-picker`): quando la colonna laterale diventa una
+   tendina e le tabelle diventano schede, i comandi diventano da dito. Una
+   soglia sola, così non c'è una fascia di larghezze con l'assetto del telefono
+   e le misure della scrivania. */
+@media (max-width: 900px) {
+  /* La barra passa da 48 a 56 per contenere una ricerca da 44 senza
+     incollarla ai due bordi. Gli agganci dello scorrimento — la colonna, il
+     selettore di sezione — la leggono da `--adm-bar` e si spostano da soli. */
+  :root { --adm-bar: 56px; }
+  .adm-search { height: 44px; }
+
+  .adm-profilo__tasto { min-height: 44px; }
+  .adm-profilo__voce { padding: 13px 14px; }
+
+  /* Le voci in coda al selettore di sezione: erano il punto peggiore di tutta
+     l'area — «vista gestore» in una riga alta 17 px, «esci dall'area
+     riservata» in 14. `inline-flex` perché su un collegamento in linea
+     `min-height` da sola non alza la scatola. */
+  .adm-picker__links { gap: 0 18px; }
+  .adm-picker__links a,
+  .adm-picker__links button {
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+
+  .adm-field input,
+  .adm-field select,
+  .adm-comando select { height: 44px; }
+
+  /* 17 px erano già una scelta — «una misura da dito anche col mouse»
+     (§ admin.css) — presa col mouse in mano. Col dito la misura è 24. */
+  .adm-form input[type="checkbox"],
+  .adm-form input[type="radio"],
+  .adm-tr input[type="checkbox"] { width: 24px; height: 24px; }
+
+  /* Un minimo solo per tutti i pulsanti, comprese le tre varianti ridotte:
+     nascono per stare dentro una riga di tabella densa, e qui le righe non
+     sono più righe ma schede impilate. Vanno nominate una per una perché
+     hanno due classi e vincerebbero su `.adm-btn` da sola. */
+  .adm-btn,
+  .adm-riga-azioni .adm-btn,
+  .adm-provino .adm-btn,
+  .adm-table__comandi .adm-btn { min-height: 44px; padding: 0 14px; font-size: 13.5px; }
+  /* Questa porta `!important` nella sua regola di base: si risponde in rima,
+     e `height: auto` perché un `min-height` non può alzare un `height` già
+     dichiarato (§ admin.css, `.adm-btn`, «Perché `min-height` e non
+     `height`»). */
+  .adm-dash__btn-sm {
+    height: auto !important; min-height: 44px !important;
+    padding: 0 14px !important; font-size: 13.5px !important;
+  }
+  .adm-dash__action-btn { height: 44px; }
+
+  .adm-pillfiltro {
+    display: inline-flex; align-items: center;
+    min-height: 44px; padding: 0 14px;
+  }
+
+  /* Collegamenti che fanno il lavoro di un pulsante: «Aggiorna», «Verifica»,
+     «Gestisci», «Apri» in coda alle righe della checklist, e il rimando in
+     fondo a ogni riquadro indicatore. Erano alti 19 e 28. */
+  .adm-dash__check-action,
+  .adm-dash__kpi-link {
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+
+  /* Il titolo di una riga è il modo in cui si apre quello che la riga
+     descrive — «Castagnata con le famiglie», «Gita in montagna» — e
+     impilata la riga diventa una scheda in cui quel titolo è il comando
+     principale: erano venti collegamenti alti 21 px in una schermata sola.
+     `:not(.adm-btn)` perché i pulsanti dentro le righe hanno già il loro
+     minimo qui sopra e non vanno contati due volte. */
+  .adm-tr a:not(.adm-btn) {
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+
+  /* Nei gruppi a scelta multipla — le unità destinatarie di un'attività — il
+     bersaglio non è la casella da 24 ma la `<label>` che la contiene insieme
+     alla parola, ed era alta 30. Si alza quella: ingrandire ancora la casella
+     la farebbe sembrare un riquadro. */
+  .adm-field label:has(> input[type="checkbox"]),
+  .adm-field label:has(> input[type="radio"]) { min-height: 44px; }
+
+  /* La matrice dei permessi è l'unica tabella vera che resta tabella e scorre
+     di lato (§ admin.css): le sue celle sono comandi e vanno prese col dito. */
+  .matrice__tasto { min-height: 44px; }
+}
+
+/* ==========================================================================
+   Dashboard dello sviluppatore: verdetto, numeri, grafici
+   (§ components/area/DashboardSviluppatore.tsx e Grafici.tsx)
+   ========================================================================== */
+
+/* --- Il periodo ---------------------------------------------------------- */
+
+.dash-filtri { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dash-filtri > .adm-btn { margin-left: auto; }
+.dash-filtri__nota { font-size: 13px; color: var(--adm-muted); }
+.dash-periodi {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-radius: var(--adm-r);
+}
+:where(body.admin) a.dash-periodo,
+.dash-periodo {
+  display: inline-flex; align-items: center; height: 32px; padding: 0 14px;
+  border-radius: 4px; font-size: 13.5px; font-weight: 600; color: var(--adm-muted);
+  text-decoration: none;
+}
+.dash-periodo:hover { background: var(--adm-hover); color: var(--adm-ink); }
+:where(body.admin) a.dash-periodo[aria-current="true"],
+.dash-periodo[aria-current="true"] { background: var(--adm-primario); color: #fff; }
+
+/* --- I numeri ------------------------------------------------------------ */
+
+.dash-kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+:where(body.admin) a.dash-numero,
+.dash-numero {
+  /* In cima e non al centro: un riquadro con la riga di nota è più alto
+     degli altri, e centrato alzerebbe il suo numero sopra quelli accanto. */
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 20px 22px;
+  background: var(--adm-superficie); color: var(--adm-body);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+  border: 1px solid transparent;
+  text-decoration: none; transition: border-color 0.15s ease;
+}
+.dash-numero:hover { border-color: var(--adm-line); color: var(--adm-body); }
+.dash-numero__testo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dash-numero__valore {
+  font-size: 28px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--adm-g-accento);
+}
+.dash-numero__etichetta { font-size: 15px; color: var(--adm-body); }
+.dash-numero__nota { margin-top: 4px; font-size: 12.5px; line-height: 1.4; color: var(--adm-muted); }
+.dash-numero--allarme .dash-numero__nota { color: var(--adm-wait-testo); font-weight: 600; }
+.dash-numero__icona {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; flex: none; border-radius: 50%; align-self: center;
+  background: color-mix(in srgb, var(--adm-g-accento) 14%, transparent);
+  color: var(--adm-g-accento);
+}
+
+/* --- Le schede ----------------------------------------------------------- */
+
+.dash-riga { display: grid; gap: 20px; align-items: stretch; }
+.dash-riga--grande { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.dash-riga--tre { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); }
+.dash-riga--tre.dash-riga--due { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+
+.dash-scheda {
+  display: flex; flex-direction: column; gap: 18px;
+  padding: 22px 24px;
+  background: var(--adm-superficie);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+.dash-scheda__testa { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.dash-scheda__titolo {
+  margin: 0; font-family: var(--text); font-size: 18px; font-weight: 600; color: var(--adm-ink);
+}
+.dash-scheda__meta { font-size: 13px; color: var(--adm-muted); }
+.dash-scheda__piede { margin-top: auto; font-size: 13.5px; font-weight: 600; }
+.dash-vuoto { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--adm-muted); }
+.dash-misure { display: flex; flex-direction: column; gap: 20px; }
+
+/* I guasti sotto l'anello: nome e gruppo, niente note — il dettaglio è in
+   «Stato del sistema». */
+.dash-guasti { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.dash-guasti li { display: flex; align-items: flex-start; gap: 10px; }
+.dash-guasti li > span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.dash-guasti strong { font-size: 13.5px; font-weight: 600; color: var(--adm-ink); }
+.dash-guasti small { font-size: 12px; color: var(--adm-muted); }
+
+/* La tabella delle ultime operazioni. */
+.dash-tabella { width: 100%; border-collapse: collapse; font-size: 14px; }
+.dash-tabella th {
+  padding: 0 10px 10px; text-align: left;
+  font-size: 13px; font-weight: 600; color: var(--adm-muted);
+  border-bottom: 1px solid var(--adm-line-soft);
+}
+.dash-tabella td {
+  padding: 11px 10px; vertical-align: middle; color: var(--adm-ink);
+  border-bottom: 1px solid var(--adm-line-soft); overflow-wrap: anywhere;
+}
+.dash-tabella tr:last-child td { border-bottom: 0; }
+.dash-tabella th:last-child, .dash-tabella td:last-child {
+  text-align: right; white-space: nowrap; color: var(--adm-muted); font-size: 13px;
+}
+.dash-tabella__rifiutata td:nth-child(2) { color: var(--adm-stop-testo); }
+.dash-persona { display: inline-flex; align-items: center; gap: 10px; }
+.dash-iniziale {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; flex: none; border-radius: 50%;
+  background: color-mix(in srgb, var(--adm-g-accento) 14%, transparent);
+  color: var(--adm-g-accento); font-size: 13px; font-weight: 700;
+}
+
+/* L'elenco delle scadenze: segno, nome e data, i giorni a destra. Il filo a
+   sinistra ha il colore dell'esito, come l'icona accanto. */
+.dash-elenco { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.dash-elenco__voce {
+  display: flex; align-items: center; gap: 12px;
+  padding-left: 12px; border-left: 3px solid var(--adm-g-ok);
+}
+.dash-elenco__voce--aperto { border-left-color: var(--adm-g-aperto); }
+.dash-elenco__voce--guasto { border-left-color: var(--adm-g-guasto); }
+.dash-elenco__segno {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex: none; border-radius: 50%;
+}
+.dash-elenco__testo { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.dash-elenco__testo strong { font-size: 14px; font-weight: 600; color: var(--adm-ink); }
+.dash-elenco__testo small { font-size: 12.5px; color: var(--adm-muted); }
+.dash-elenco__valore { font-size: 15px; font-weight: 700; color: var(--adm-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* --- L'anello ------------------------------------------------------------ */
+
+.graf-anello { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.graf-anello__disegno { position: relative; width: 190px; max-width: 100%; aspect-ratio: 1; }
+.graf-anello__disegno svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.graf-anello__binario { fill: none; stroke: var(--adm-g-binario); stroke-width: 14; }
+.graf-anello__arco { fill: none; stroke-width: 14; }
+.graf-anello__arco--ok { stroke: var(--adm-g-ok); }
+.graf-anello__arco--aperto { stroke: var(--adm-g-aperto); }
+.graf-anello__arco--guasto { stroke: var(--adm-g-guasto); }
+.graf-anello__centro {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.graf-anello__centro strong { font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--adm-ink); }
+.graf-anello__centro span { font-size: 13px; color: var(--adm-muted); }
+.graf-anello__legenda {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px;
+  font-size: 13px; color: var(--adm-muted);
+}
+.graf-anello__legenda li { display: inline-flex; align-items: center; gap: 6px; }
+.graf-anello__legenda strong { color: var(--adm-ink); font-variant-numeric: tabular-nums; }
+.graf-anello__punto { width: 10px; height: 10px; border-radius: 50%; }
+
+/* --- Colonne ------------------------------------------------------------- */
+
+.graf { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.graf__legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--adm-muted); }
+.graf__voce { display: inline-flex; align-items: center; gap: 6px; }
+.graf__campione { width: 10px; height: 10px; border-radius: 2px; }
+.graf__campione--accento { background: var(--adm-g-accento); }
+.graf__campione--tenue { background: var(--adm-g-tenue); }
+
+/* Due colonne per due righe: a sinistra l'asse dei valori, a destra il
+   piano; sotto, l'asse del tempo allineato al piano e non all'asse. */
+.graf__piano {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 220px auto;
+  column-gap: 8px; row-gap: 6px;
+}
+/* Le tacche stanno alla stessa altezza delle righe della griglia, con la
+   stessa percentuale, e salgono di mezza riga per centrarsi sulla linea. */
+.graf__assey {
+  position: relative; min-width: 2.2em;
+  font-size: 11px; line-height: 1; color: var(--adm-muted); font-variant-numeric: tabular-nums;
+}
+.graf__assey span { position: absolute; right: 0; transform: translateY(50%); }
+.graf__area { position: relative; }
+.graf__griglia {
+  position: absolute; left: 0; right: 0; height: 1px; background: var(--adm-g-griglia);
+}
+.graf__griglia--base { background: var(--adm-bordo-comando); }
+.graf__colonne { position: absolute; inset: 0; display: grid; gap: 2px; align-items: end; }
+.graf__slot { height: 100%; display: flex; align-items: flex-end; justify-content: center; cursor: default; }
+.graf__slot:hover { background: var(--adm-hover); border-radius: 3px; }
+.graf__pila {
+  width: 100%; max-width: 24px;
+  display: flex; flex-direction: column-reverse; gap: 2px;
+  min-height: 0;
+}
+/* L'estremità superiore arrotondata di 4 px, la base dritta sulla linea. */
+.graf__pezzo { min-height: 2px; flex-basis: 0; }
+.graf__pezzo:last-child { border-radius: 4px 4px 0 0; }
+.graf__pezzo--accento { background: var(--adm-g-accento); }
+.graf__pezzo--tenue { background: var(--adm-g-tenue); }
+.graf__assex {
+  display: grid; gap: 2px; font-size: 11px; color: var(--adm-muted);
+  font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap;
+}
+
+.graf__tabella summary {
+  width: fit-content; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--adm-accento);
+}
+.graf__tabella table { width: 100%; margin-top: 8px; border-collapse: collapse; font-size: 13px; }
+.graf__tabella th, .graf__tabella td {
+  padding: 5px 8px; border-bottom: 1px solid var(--adm-line-soft); text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.graf__tabella th[scope="row"], .graf__tabella thead th:first-child { text-align: left; font-weight: 400; }
+.graf__tabella thead th { font-size: 11.5px; font-weight: 600; color: var(--adm-label); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* --- Il suggerimento ----------------------------------------------------- */
+
+.graf-sugg { position: relative; }
+.graf-sugg__bolla {
+  position: absolute; z-index: 5; pointer-events: none;
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 140px; padding: 8px 10px;
+  transform: translate(12px, calc(-100% - 8px));
+  background: var(--adm-superficie); border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r); box-shadow: 0 6px 18px light-dark(rgba(0, 24, 47, 0.12), rgba(0, 0, 0, 0.5));
+  font-size: 12.5px; color: var(--adm-body); white-space: nowrap;
+}
+.graf-sugg__bolla--sinistra { transform: translate(calc(-100% - 12px), calc(-100% - 8px)); }
+.graf-sugg__bolla strong { color: var(--adm-ink); font-weight: 700; }
+
+/* --- Misuratori e scadenze ----------------------------------------------- */
+
+.graf-misura { display: flex; flex-direction: column; gap: 6px; }
+.graf-misura__testa { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.graf-misura__nome { font-size: 14px; font-weight: 600; color: var(--adm-ink); }
+.graf-misura__valore {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700; color: var(--adm-ink); font-variant-numeric: tabular-nums;
+}
+.graf-misura__binario {
+  display: block; height: 8px; border-radius: 999px; background: var(--adm-g-binario); overflow: hidden;
+}
+.graf-misura__pieno { display: block; height: 100%; border-radius: 999px; }
+.graf-misura__pieno--ok { background: var(--adm-g-ok); }
+.graf-misura__pieno--aperto { background: var(--adm-g-aperto); }
+.graf-misura__pieno--guasto { background: var(--adm-g-guasto); }
+.graf-misura__dettaglio { font-size: 12.5px; color: var(--adm-muted); }
+
+.graf-stato { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; }
+.graf-stato--ok { background: var(--adm-ok-fondo); color: var(--adm-ok-testo); }
+.graf-stato--aperto { background: var(--adm-wait-fondo); color: var(--adm-wait-testo); }
+.graf-stato--guasto { background: var(--adm-stop-fondo); color: var(--adm-stop-testo); }
+
+
+@media (max-width: 1240px) {
+  .dash-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-riga--tre, .dash-riga--tre.dash-riga--due { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-riga--tre > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 1000px) {
+  .dash-riga--grande { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .dash-riga--tre, .dash-riga--tre.dash-riga--due { grid-template-columns: minmax(0, 1fr); }
+  .dash-kpi { gap: 10px; }
+  .dash-numero { padding: 14px 16px; }
+  .dash-numero__valore { font-size: 24px; }
+  .dash-numero__etichetta { font-size: 13.5px; }
+  .dash-numero__icona { width: 42px; height: 42px; }
+  .dash-filtri > .adm-btn { margin-left: 0; }
+  .dash-scheda { padding: 18px; }
+  .dash-tabella td:first-child .dash-persona { gap: 8px; }
+}
+@media (max-width: 420px) {
+  .dash-kpi { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- La dashboard del social media manager (4 ottobre 2026) ---
+   Tre riquadri, uno per area del suo lavoro — contenuti, foto, calendario — e
+   due collegamenti in fondo a ciascuno. Sta in coda al file perché deve
+   vincere sulle regole responsive delle `.adm-dash__kpis` qui sopra: tre
+   riquadri su una griglia da due lascerebbero il terzo da solo. */
+.adm-dash__kpis--tre {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.adm-dash__kpi-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.adm-dash__kpi-links .adm-dash__kpi-link {
+  margin-top: 0;
+  padding-top: 2px;
+}
+.adm-dash__fuori {
+  margin: 0;
+  padding: 0 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--adm-body);
+}
+@media (max-width: 900px) {
+  .adm-dash__kpis--tre {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* La panoramica del referente di unità perde «Fotografie» con gli album spenti e
+   «Circolari» con i documenti chiusi: i riquadri rimasti riempiono la riga
+   invece di lasciarne vuota metà. */
+.adm-dash__kpis--due {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 700px) {
+  .adm-dash__kpis--due {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+
+/* --- Calendario: attività per mese ----------------------------------------- */
+.adm-cal__mese { display: flex; flex-direction: column; gap: 8px; }
+.adm-cal__titolo {
+  font-family: var(--text); font-size: 15px; font-weight: 700; text-transform: capitalize;
+  color: var(--adm-ink); margin: 6px 0 0;
+}
+.adm-cal__riga {
+  display: grid; grid-template-columns: 56px minmax(0, 1fr) auto auto; align-items: center;
+  gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--adm-line-soft);
+}
+.adm-cal__riga:last-child { border-bottom: 0; }
+.adm-cal__data {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+  background: var(--adm-head); line-height: 1.1;
+}
+.adm-cal__data strong { font-size: 20px; color: var(--adm-ink); }
+.adm-cal__data span { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--adm-muted); }
+.adm-cal__corpo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.adm-cal__titolo-riga { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.adm-cal__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; color: var(--adm-muted); }
+.adm-cal__unita {
+  display: inline-flex; align-items: center; gap: 6px; padding: 1px 9px 1px 8px; font-size: 12.5px;
+  border: 1px solid var(--adm-line); border-radius: 999px; color: var(--adm-ink); background: var(--adm-superficie);
+}
+.adm-cal__unita::before {
+  content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--colore, #003366);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+@media (max-width: 700px) {
+  .adm-cal__riga { grid-template-columns: 52px minmax(0, 1fr); padding: 12px 14px; }
+  .adm-cal__riga > .adm-pill, .adm-cal__riga > .adm-btn { grid-column: 2; justify-self: start; }
+}
+
+
+/* --- Documenti: gruppi e file ---------------------------------------------- */
+.adm-iconbtn {
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+  padding: 0; border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r-box);
+  background: var(--adm-superficie); color: var(--adm-ink); cursor: pointer; text-decoration: none;
+}
+.adm-iconbtn:hover { border-color: var(--adm-muted); background: var(--adm-head); }
+.adm-iconbtn.is-attivo { background: var(--adm-ink); color: #fff; border-color: var(--adm-ink); }
+.adm-iconbtn:disabled { opacity: 0.5; cursor: default; }
+.adm-iconbtn--vuoto, .adm-iconbtn--vuoto:hover { visibility: hidden; }
+.adm-iconbtn:focus-visible { outline: 2px solid var(--adm-focus, #003366); outline-offset: 2px; }
+
+.adm-doc__barra { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.adm-doc__barra h2 { font-family: var(--text); font-size: 17px; font-weight: 700; color: var(--adm-ink); }
+.adm-doc__icone { display: flex; gap: 8px; }
+.adm-doc__icone .adm-iconbtn { width: 42px; height: 42px; }
+
+.adm-doc__gruppi { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.adm-doc__gruppo {
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+  box-shadow: var(--adm-ombra); transition: border-color 0.12s, background 0.12s;
+}
+.adm-doc__gruppo.is-sopra { border-color: var(--adm-ink); background: var(--adm-head); outline: 2px dashed var(--adm-ink); outline-offset: -3px; }
+.adm-doc__testa { display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 4px; }
+.adm-doc__apri {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px 10px;
+  background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; border-radius: var(--adm-r-box);
+}
+.adm-doc__apri:hover { background: var(--adm-head); }
+.adm-doc__freccia { transition: transform 0.12s; flex: none; color: var(--adm-muted); }
+.adm-doc__gruppo.is-aperto .adm-doc__freccia { transform: rotate(90deg); }
+/* Il nome prende lo spazio che resta (base 0, non la sua lunghezza), conto e
+   pastiglia hanno una larghezza fissa: così le colonne a destra stanno in fila
+   qualunque sia il nome del gruppo, e le icone non si schiacciano quando sotto
+   c'è la descrizione. */
+.adm-doc__apri > svg { flex: none; }
+.adm-doc__nome { display: flex; flex-direction: column; min-width: 0; flex: 1 1 0; font-size: 15px; }
+.adm-doc__nome .c-muted { font-size: 13px; }
+.adm-doc__conto { font-size: 13px; color: var(--adm-muted); white-space: nowrap; flex: none; min-width: 92px; text-align: right; }
+.adm-doc__apri > .adm-pill { flex: none; min-width: 112px; justify-content: center; text-align: center; }
+.adm-doc__azioni { display: flex; align-items: center; gap: 6px; flex: none; }
+.adm-doc__azioni .adm-comando { display: inline-flex; flex-direction: row; }
+.adm-doc__corpo { border-top: 1px solid var(--adm-line-soft); padding: 8px 12px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+.adm-doc__vuoto { font-size: 14px; color: var(--adm-muted); padding: 14px; border: 1px dashed var(--adm-line); border-radius: var(--adm-r-box); text-align: center; margin: 4px 0; }
+.adm-doc__lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.adm-doc__riga { border-bottom: 1px solid var(--adm-line-soft); }
+.adm-doc__riga:last-child { border-bottom: 0; }
+.adm-doc__rigatesta { display: flex; align-items: center; gap: 12px; padding: 10px 6px; }
+.adm-doc__rigatesta[draggable="true"] { cursor: grab; }
+.adm-doc__rigatesta[draggable="true"]:active { cursor: grabbing; }
+.adm-doc__titolo { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; font-size: 14.5px; overflow-wrap: anywhere; }
+.adm-doc__titolo .c-muted { font-size: 12.5px; }
+.adm-doc__editor { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 10px; }
+.adm-doc__piede { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 13px; margin: 2px 6px 0; }
+.adm-doc__link { display: inline-flex; align-items: center; gap: 6px; }
+.adm-doc__chiudi { background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; cursor: pointer; color: inherit; }
+@media (max-width: 700px) {
+  .adm-doc__testa { flex-wrap: wrap; }
+  .adm-doc__apri { flex-wrap: wrap; }
+  .adm-doc__conto { display: none; }
+  .adm-doc__nome { flex-basis: calc(100% - 64px); }
+  .adm-doc__rigatesta { flex-wrap: wrap; }
+  .adm-doc__titolo { flex-basis: calc(100% - 40px); }
+}
+
+
+/* --- Testi delle pagine: schede e righe etichetta + casella ------------------ */
+.adm-schede { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--adm-line); }
+.adm-scheda {
+  padding: 10px 18px; border: 1px solid transparent; border-bottom: 0; background: none;
+  font: inherit; font-weight: 600; color: var(--adm-muted); cursor: pointer;
+  border-radius: var(--adm-r-box) var(--adm-r-box) 0 0; margin-bottom: -1px;
+}
+.adm-scheda:hover { color: var(--adm-ink); }
+.adm-scheda.is-attiva { color: var(--adm-ink); background: var(--adm-superficie); border-color: var(--adm-line); }
+.adm-testi { display: flex; flex-direction: column; }
+.adm-testi__guida {
+  display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; padding: 0; list-style: none;
+  font-size: 13px; color: var(--adm-body);
+}
+.adm-testi__guida li { position: relative; padding-left: 14px; }
+.adm-testi__guida li::before {
+  content: ""; position: absolute; left: 0; top: 0.6em;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--adm-accento);
+}
+.adm-testi__apri { margin-left: auto; }
+.adm-testo {
+  display: grid; grid-template-columns: minmax(200px, 300px) minmax(0, 1fr); gap: 10px 32px;
+  padding: 20px 0; border-top: 1px solid var(--adm-line-soft);
+}
+.adm-testo:first-child { border-top: 0; padding-top: 4px; }
+.adm-testo__etichetta { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 6px; }
+.adm-testo__titolo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.adm-testo__titolo .adm-field__label { font-size: 14.5px; font-weight: 700; color: var(--adm-ink); }
+.adm-testo__titolo .adm-pill { align-self: center; height: 20px; padding: 0 7px; font-size: 10px; }
+.adm-testo__aiuto { font-size: 13px; line-height: 1.5; color: var(--adm-muted); }
+.adm-testo__campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.adm-testo__campo textarea, .adm-testo__campo input { width: 100%; }
+.adm-testo__campo textarea { min-height: 0; }
+.adm-testo__conto { align-self: flex-end; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--adm-label); }
+.adm-testo__conto.is-pieno { color: var(--adm-wait-testo); font-weight: 600; }
+.adm-testo__attesa {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin: 0;
+  padding: 9px 12px; border: 1px solid var(--adm-wait-bordo); border-radius: var(--adm-r);
+  background: var(--adm-wait-fondo); font-size: 13px; line-height: 1.45; color: var(--adm-wait-testo);
+}
+.adm-testo__attesa .adm-pill { align-self: center; height: 20px; font-size: 10px; }
+/* Il pulsante di salvataggio resta a portata mentre si scorre una scheda lunga. */
+.adm-testi__salva {
+  position: sticky; bottom: 0; z-index: 2;
+  margin: 0 -24px -22px; padding: 14px 24px;
+  background: var(--adm-superficie); border-top: 1px solid var(--adm-line);
+  border-radius: 0 0 var(--adm-r-box) var(--adm-r-box);
+}
+/* Domande frequenti: una scheda per domanda, con la striscia del suo colore. */
+.adm-faq {
+  display: flex; flex-direction: column; gap: 14px; min-width: 0; margin: 0;
+  padding: 14px 16px 16px; border: 1px solid var(--adm-line); border-left: 4px solid var(--colore, var(--adm-line));
+  border-radius: var(--adm-r-box); background: var(--adm-panel);
+}
+.adm-faq__testa { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.adm-faq__numero {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 24px; height: 24px; border-radius: 50%; background: var(--adm-head);
+  font-size: 12px; font-weight: 700; color: var(--adm-body);
+}
+.adm-faq__anteprima {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 14.5px; font-weight: 700; color: var(--adm-ink);
+}
+.adm-faq__togli {
+  flex: none; min-height: 28px; padding: 0 10px; border: 0; border-radius: var(--adm-r); background: none;
+  font: inherit; font-size: 13px; color: var(--adm-muted); cursor: pointer;
+}
+.adm-faq__togli:hover { color: var(--adm-stop-testo); background: var(--adm-stop-fondo); }
+.adm-faq__aggiungi {
+  min-height: 44px; border: 1px dashed var(--adm-bordo-comando); border-radius: var(--adm-r-box); background: none;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--adm-body); cursor: pointer;
+}
+.adm-faq__aggiungi:hover { border-color: var(--adm-accento); color: var(--adm-accento); }
+.adm-testi__nota { margin-top: 6px; }
+.adm-testi__nota summary { cursor: pointer; font-weight: 600; }
+@media (max-width: 800px) {
+  .adm-testo { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .adm-testo__etichetta { padding-top: 0; }
+}
+
+
+/* --- Referenti: un riquadro per persona, per unità ------------------------------- */
+.adm-referenti__unita { display: flex; flex-direction: column; gap: 10px; padding-left: 14px; border-left: 5px solid var(--colore, #003366); }
+.adm-referenti__testa { display: flex; align-items: baseline; gap: 12px; }
+.adm-referenti__testa h3 { font-family: var(--text); font-size: 17px; font-weight: 700; color: var(--adm-ink); margin: 0; }
+.adm-referenti__contatto {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px;
+  background: var(--adm-head); border: 1px solid var(--adm-line-soft); border-radius: var(--adm-r-box); font-size: 14px;
+}
+.adm-referenti__contatto > .adm-form { width: 100%; }
+.adm-referenti__contatto-etichetta { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--adm-label); }
+.adm-referenti__contatto-valore { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.adm-referenti__griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.adm-referente {
+  display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; position: relative;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+.adm-referente__testa { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.adm-referente__iniziali {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px;
+  border-radius: 50%; background: var(--colore, #003366); color: var(--sopra, #fff); font-weight: 700; font-size: 15px;
+}
+.adm-referente__nome { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.adm-referente__nome .c-muted { font-size: 13px; }
+.adm-referente > .adm-pill { align-self: flex-start; }
+.adm-referente__azioni { display: flex; gap: 6px; position: absolute; top: 12px; right: 12px; }
+.adm-referente__azioni form { display: inline-flex; }
+.adm-referente__modulo { display: flex; flex-direction: column; gap: 12px; }
+.adm-referente__modulo .adm-form__grid { grid-template-columns: minmax(0, 1fr); }
+
+
+/* --- Foto: un riquadro per posto ---------------------------------------------- */
+.adm-foto__titolo { font-family: var(--text); font-size: 15px; font-weight: 700; color: var(--adm-ink); margin: 10px 0 0; }
+.adm-foto__griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.adm-foto__griglia--ritratti { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.adm-foto {
+  display: flex; flex-direction: column; background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra); overflow: hidden;
+}
+.adm-foto__anteprima {
+  aspect-ratio: 2 / 1; background: var(--adm-head); display: flex; align-items: center; justify-content: center;
+  border-bottom: 1px solid var(--adm-line-soft); overflow: hidden;
+}
+.adm-foto__anteprima--ritratto { aspect-ratio: 4 / 5; max-height: 280px; }
+.adm-foto__anteprima img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.adm-foto__vuoto { font-size: 13px; color: var(--adm-muted); }
+.adm-foto__corpo { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 16px 16px; min-width: 0; }
+.adm-foto__corpo h4 { font-family: var(--text); font-size: 15px; font-weight: 700; margin: 0; color: var(--adm-ink); overflow-wrap: anywhere; }
+.adm-foto__dove { font-size: 12.5px; color: var(--adm-muted); line-height: 1.4; }
+.adm-foto__consenso { font-size: 12.5px; color: var(--adm-muted); font-style: italic; }
+.adm-foto__carica { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.adm-foto__carica input[type="file"] { width: 100%; font-size: 13px; }
+.adm-foto__descrizione summary { font-size: 12.5px; cursor: pointer; color: var(--adm-muted); }
+.adm-foto__descrizione input { width: 100%; margin-top: 6px; }
+.adm-foto__azioni { display: flex; gap: 8px; }
+/* L'avviso della proposta in attesa, con la miniatura, sta nella larghezza
+   della scheda: senza, la miniatura lo spingeva oltre il bordo destro. */
+.adm-foto__corpo > .adm-notice { align-self: stretch; flex-wrap: wrap; min-width: 0; }
+.adm-foto__corpo > .adm-notice > span:not(.adm-notice__tag) { flex: 1 1 12em; min-width: 0; }
+
+
+/* --- Unità: intestazione, indice e riquadri ----------------------------------- */
+.adm-unita__testa {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 18px;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-left: 6px solid var(--colore, #003366);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+.adm-unita__testa img { flex: none; object-fit: contain; }
+.adm-unita__testa > div { flex: 1 1 auto; min-width: 0; }
+.adm-unita__testa h2 { font-family: var(--text); font-size: 18px; font-weight: 700; color: var(--adm-ink); margin: 0; }
+.adm-unita__indice { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; }
+.adm-unita__indice a { text-decoration: none; border-bottom: 1px dotted var(--adm-muted); }
+.adm-unita__riquadro { scroll-margin-top: 80px; }
+.adm-unita__riquadro h3 { font-family: var(--text); font-size: 16px; font-weight: 700; color: var(--adm-ink); margin: 0; }

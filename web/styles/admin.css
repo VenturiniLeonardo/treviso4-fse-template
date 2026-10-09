@@ -1,0 +1,919 @@
+/* ==========================================================================
+   Area riservata — referente di unità, gestore, sviluppatore.
+   Interfaccia di servizio: densa, senza smussi, monospazio per i dati.
+   ========================================================================== */
+
+:root {
+  --adm-ink: light-dark(#23262b, #eceae5);
+  --adm-body: light-dark(#4c5261, #c6c9d0);
+  /* ## I grigi e il contrasto, misurato
+     Il fondo della pagina è #eceae5, quello dei riquadri #fff, della testata
+     di tabella #f7f6f2, della colonna #fbfaf7. Su ciascuno c'è una luminanza
+     oltre la quale un testo non arriva più al minimo AA di 4,5:1, e sono
+     diverse: sulla pagina il tetto è L* 44,8, sul bianco 49,9.
+
+     Da qui i tre grigi, e **due passi da sei unità di L\***, che si vedono:
+
+       --adm-body   #4c5261   L* 34,9   6,5:1 ovunque   il testo
+       --adm-muted  #63625d   L* 41,5   5,1:1 ovunque   prosa secondaria: la
+                                        nota di sezione, le spiegazioni sotto
+                                        i campi, il filo di pane, i dati
+                                        smorzati nelle tabelle
+       --adm-label  #73716a   L* 47,6   4,5–4,9 su      micro-etichette in
+                                        bianco, testata monospazio: sopra un
+                                        e colonna       campo, in cima a una
+                                                        colonna, in cima a un
+                                                        gruppo della colonna
+
+     ## Il vincolo di `--adm-label`, che è il motivo per cui sono due e non uno
+     `--adm-label` fa 4,06:1 sul fondo **della pagina**: ci sta solo perché non
+     ci finisce mai sopra: vive dentro i riquadri bianchi e nella colonna, dove
+     fa da 4,52 a 4,88. L'unica cosa che stava su `--adm-label` **e** sul fondo
+     della pagina era il filo di pane, e infatti è passata su `--adm-muted`.
+     La regola per chi aggiunge: se un testo grigio finisce direttamente sul
+     fondo della pagina, va su `--adm-muted`.
+
+     ## Che cosa c'era prima
+     `--adm-label` era #8b8880 e faceva 2,94:1 sulla pagina e 3,54 sul bianco:
+     sotto il minimo dappertutto, e sopra ci stanno le etichette di ogni campo
+     e le intestazioni di ogni colonna. C'era anche un quarto grigio,
+     `--adm-faint` (#a09e98, 2,2:1), che vestiva i titoli dei gruppi nella
+     colonna e le celle smorzate: è stato tolto invece di scurito, perché una
+     volta portato in AA sarebbe finito a un'unità di L* da `--adm-label` — due
+     token per lo stesso colore. I suoi otto usi sono passati su `--adm-label`.
+
+     La banda utile è stretta — fra l'inchiostro del testo e il tetto della
+     pagina ci sono dieci unità di L* — e non ce ne stanno quattro di livelli.
+     Tre sì, ed è quello che l'interfaccia usa davvero. */
+  --adm-muted: light-dark(#63625d, #a3a6ad);
+  --adm-label: light-dark(#73716a, #9699a1);
+  --adm-line: light-dark(#dcdad4, #353a42);
+  --adm-line-soft: light-dark(#eceae5, #2b2f36);
+  /* ## Due grigi di bordo, e non è una svista
+     `--adm-line` è il bordo di una **superficie**: il riquadro di un modulo, la
+     cornice di una tabella, la riga fra due voci. `--adm-bordo-comando` è più
+     scuro di un gradino e sta attorno alle cose che si **azionano**: pulsanti,
+     caselle di testo, tendine, aree di testo. La differenza serve — un campo
+     con lo stesso bordo del riquadro che lo contiene si perde dentro — e finora
+     era un letterale `#cfccc5` ripetuto sette volte, cioè un token che nessuno
+     aveva ancora chiamato per nome. Si vedeva: il campo file, l'unico scritto
+     con `var(--adm-line)`, aveva il bordo di un gradino più chiaro degli input
+     che gli stavano accanto nella stessa riga. */
+  --adm-bordo-comando: light-dark(#cfccc5, #4d535d);
+  --adm-head: light-dark(#f7f6f2, #262a30);
+  --adm-panel: light-dark(#fbfaf7, #1a1c20);
+  --adm-locked: light-dark(#faf9f6, #1c1f23);
+  --adm-bar: 48px;
+  /* ## Una misura sola per i comandi, due raggi, un'ombra
+     L'area parlava due lingue. La dashboard aveva riquadri smussati a 6 px e
+     un'ombra appena accennata; tutte le altre schermate — moduli, tabelle,
+     indicatori — angoli vivi e nessun rilievo, con le etichette in
+     monospazio. Passando dall'una alle altre sembrava di cambiare programma,
+     ed è la ragione per cui l'insieme si leggeva «grezzo». Ora la lingua è
+     una, quella della dashboard, e i numeri stanno qui:
+
+       --adm-comando  38 px   altezza di pulsanti, caselle e tendine: nella
+                              stessa riga un pulsante da 34 accanto a un
+                              campo da 38 era quattro pixel più basso, e si
+                              vedeva sotto ogni modulo
+       --adm-r         6 px   raggio dei comandi
+       --adm-r-box     8 px   raggio delle superfici (riquadri, tabelle)
+       --adm-ombra            il rilievo di una superficie sul fondo */
+  --adm-comando: 38px;
+  --adm-r: 6px;
+  --adm-r-box: 8px;
+  --adm-ombra: 0 1px 2px light-dark(rgba(0, 24, 47, 0.05), rgba(0, 0, 0, 0.35)),
+    0 1px 1px light-dark(rgba(0, 24, 47, 0.03), rgba(0, 0, 0, 0.2));
+
+  /* ## Il tema scuro
+     Ogni colore dell'area si scrive **una volta**, con i due valori:
+     `light-dark(chiaro, scuro)`. Quale dei due vale lo decide `color-scheme`
+     sull'elemento `<html>` (§ più sotto): «come il sistema» lo lascia al
+     telefono o al computer, «chiaro» e «scuro» lo fissano. Niente copia
+     della tavolozza in un blocco `@media` da tenere allineato a mano.
+
+     Nello scuro i fondi vanno dal più profondo (la pagina) al più chiaro (la
+     testata di tabella), cioè al contrario del chiaro: una superficie che
+     sta sopra un'altra è più chiara, come se fosse più vicina alla luce. I
+     testi, misurati sui quattro fondi scuri, stanno tutti sopra 4,5:1 — il
+     più debole è `--adm-label` sulla testata di tabella, 5,1:1.
+
+     ## I colori istituzionali restano quelli
+     Il navy, il verde e il rosso del gruppo fanno anche da **fondo** sotto
+     una scritta bianca — le pastiglie di fascia, la barra, il pulsante
+     principale — e schiariti per lo scuro quella scritta non si leggerebbe
+     più. Quindi non si toccano: nell'area il colore si chiede per il suo
+     **ruolo** (l'accento dei collegamenti, il testo di un esito), e sono i
+     ruoli ad avere due valori. */
+  --adm-superficie: light-dark(#ffffff, #1f2227);
+  --adm-superficie-fredda: light-dark(#f7f9fc, #22262d);
+  --adm-hover: light-dark(#f1efe9, #2a2e35);
+  --adm-attivo: light-dark(#e9edf3, #29344a);
+  --adm-line-sola-lettura: light-dark(#e7e5df, #30343b);
+  --adm-bordo-forte: light-dark(#c4c1b9, #5b626d);
+
+  --adm-accento: light-dark(#003366, #8fb6ec);
+  --adm-primario: light-dark(#002144, #2f64a8);
+  --adm-primario-premuto: light-dark(#001730, #25518c);
+
+  --adm-ok-testo: light-dark(#00512a, #7fcf9c);
+  --adm-ok-fondo: light-dark(#eff6f1, #15301f);
+  --adm-ok-bordo: light-dark(#7fae95, #2e6b47);
+  --adm-wait-testo: light-dark(#7a5c00, #e6c35a);
+  --adm-wait-fondo: light-dark(#fff9e0, #332a0f);
+  --adm-wait-velo: light-dark(#fffdf5, #25221a);
+  --adm-wait-bordo: light-dark(#e0b700, #8a6c10);
+  --adm-stop-testo: light-dark(#8c2b24, #f2a097);
+  --adm-rosso: light-dark(#a5342c, #ef8b80);
+  --adm-stop-fondo: light-dark(#fbf0ee, #3a1e1b);
+  --adm-stop-bordo: light-dark(#c98d87, #7f3d35);
+
+  /* ## I colori dei grafici, validati
+     Misurati con il validatore della guida ai grafici, non a occhio, contro
+     la superficie dei riquadri di ciascun tema (#fff e #1f2227):
+
+       accento   una serie sola in evidenza; il resto è `--adm-g-tenue`, cioè
+                 grigio, e un grigio non deve distinguersi da niente
+       stato     a posto / da guardare / guasto, solo per gli esiti
+
+     Nello scuro due passi dello stesso blu non ci stavano — la fascia di
+     luminosità leggibile è troppo stretta — ed è la ragione per cui i grafici
+     usano l'evidenza (accento + grigio) invece di due blu. Il rosso tira al
+     cremisi: con quello mattone, ambra e rosso si confondevano per chi non
+     distingue il verde dal rosso. Ogni segno di stato porta comunque icona e
+     parola, e il giallo sul bianco (2,6:1) non fa mai da testo. */
+  --adm-g-accento: light-dark(#2f64a8, #5f92df);
+  --adm-g-tenue: light-dark(#cfccc5, #474c55);
+  --adm-g-griglia: light-dark(#eceae5, #2b2f36);
+  --adm-g-binario: light-dark(#eceae5, #2b2f36);
+  --adm-g-ok: light-dark(#3d8a5f, #3f9a66);
+  --adm-g-aperto: light-dark(#c99a06, #b98c1f);
+  --adm-g-guasto: light-dark(#b8406a, #d9577f);
+}
+
+/* Chi decide fra i due valori. La classe la mette il layout dell'area
+   leggendo la preferenza del profilo; senza preferenza vale il sistema. */
+html.tema-sistema { color-scheme: light dark; }
+html.tema-chiaro { color-scheme: light; }
+html.tema-scuro { color-scheme: dark; }
+
+/* Le variabili del sito pubblico che i suoi componenti usano anche qui dentro
+   — la pastiglia di stato, i badge dell'anno, i titoli — con il loro valore
+   scuro. Solo nell'area: il sito resta chiaro. */
+body.admin {
+  --surface: light-dark(#ffffff, #1f2227);
+  --bg: light-dark(#fbfaf7, #1a1c20);
+  --bg-alt: light-dark(#f4f2ec, #22252a);
+  --bg-shell: light-dark(#eceae5, #15171a);
+  --line: light-dark(#e7e3db, #353a42);
+  --line-strong: light-dark(#ddd9d2, #414750);
+  --line-soft: light-dark(#eee9e0, #2b2f36);
+  --rule: light-dark(#d9d4ca, #3a3f47);
+  --ink: light-dark(#002144, #eceae5);
+  --body: light-dark(#4c5261, #c6c9d0);
+  --muted: light-dark(#6b6a66, #a3a6ad);
+  --muted-2: light-dark(#706d66, #9ea1a8);
+  --muted-3: light-dark(#a8a5a0, #5d626a);
+}
+
+body.admin {
+  background: var(--bg-shell);
+  color: var(--adm-body);
+  font-size: 14.5px;
+}
+/* I collegamenti: nel sito sono navy su bianco, e sullo scuro sparirebbero.
+   `:where` tiene la regola al peso di un semplice `a`, così un pulsante che è
+   un collegamento (`a.adm-btn`) continua a decidere da sé il proprio colore. */
+:where(body.admin) a { color: var(--adm-accento); }
+:where(body.admin) a:hover { color: var(--adm-ok-testo); }
+
+/* --- Barra superiore ----------------------------------------------------- */
+
+.adm-bar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  height: var(--adm-bar); padding: 0 20px;
+  background: var(--navy-800); border-bottom: 1px solid #001730;
+}
+.adm-bar--dark { background: #12161c; border-bottom-color: #05080c; }
+
+.adm-bar__left, .adm-bar__right { display: flex; align-items: center; gap: 14px; }
+.adm-bar__left { gap: 18px; min-width: 0; }
+.adm-bar__brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.adm-bar__brand img { height: 24px; width: auto; display: block; }
+.adm-bar__brand span {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.adm-bar__sep { width: 1px; height: 22px; background: rgba(255, 255, 255, 0.16); }
+
+.adm-badge {
+  display: inline-flex; align-items: center; gap: 9px;
+  height: 22px; padding: 0 9px;
+  background: rgba(255, 255, 255, 0.12);
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: #fff;
+}
+.adm-badge--outline { background: transparent; border: 1px solid rgba(255, 255, 255, 0.25); color: rgba(255, 255, 255, 0.8); }
+/* «produzione». Piena e arancione, non di contorno come «sviluppo»: la
+   differenza fra le due deve arrivare prima della lettura, perché è la parola
+   che si guarda un istante prima di premere qualcosa di irreversibile. È lo
+   stesso arancione dell'avatar del gestore, e con lo stesso inchiostro
+   navy sopra — bianco su #ff7f26 fa 2,5:1 e non si legge, navy fa 6,3:1. */
+/* `height: auto` serve — la pastiglia dell'unità è più alta delle altre perché
+   contiene il logo — ma da sola lasciava crescere anche l'altezza: il
+   nome andava a capo e la pastiglia sfondava la barra sopra e sotto. Il tetto
+   è `max-height`, il nome sta su una riga sola e si accorcia con i puntini
+   quando lo spazio finisce (§ .adm-badge__testo). */
+.adm-badge--unit {
+  height: auto; max-height: 34px; padding: 3px 10px 3px 4px; text-transform: none;
+  font-family: var(--text); font-size: 13px; letter-spacing: 0;
+  background: rgba(255, 255, 255, 0.1);
+  min-width: 0; flex-shrink: 1;
+}
+.adm-badge--unit img { width: 20px; height: 20px; display: block; flex: none; }
+.adm-badge__testo {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.adm-search {
+  width: 220px; height: 30px; padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22); border-radius: var(--adm-r);
+  background: rgba(255, 255, 255, 0.08);
+  font-family: var(--text); font-size: 13px; color: #fff;
+}
+.adm-search::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+.adm-role {
+  font-family: var(--text); font-size: 13px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.78); white-space: nowrap;
+}
+.adm-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex: none; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  font-family: var(--text); font-size: 11.5px; font-weight: 700; color: #fff;
+}
+/* L'arancione del gestore. Sopra ci va l'inchiostro navy e non il bianco:
+   bianco su #ff7f26 fa 2,5:1 e non si legge, navy fa 6,3:1. */
+.adm-avatar--gestore { background: #ff7f26; color: #002144; font-weight: 700; }
+
+/* --- Impalcatura --------------------------------------------------------- */
+
+.adm-shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); }
+
+.adm-side {
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 18px 14px 32px;
+  background: var(--adm-panel); border-right: 1px solid var(--adm-line);
+  position: sticky; top: var(--adm-bar); align-self: start;
+  min-height: calc(100vh - var(--adm-bar));
+}
+.adm-scope {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px; background: var(--adm-superficie);
+  border: 1px solid var(--adm-line); border-left: 3px solid var(--adm-accento);
+  border-radius: var(--adm-r); box-shadow: var(--adm-ombra);
+}
+/* ## Le etichette non sono dati
+   Il monospazio resta dov'è nato: date, ore, codici, conteggi — cose da
+   confrontare colonna per colonna. Le etichette dell'interfaccia («Titolo»,
+   «Ambito consentito», l'intestazione di una colonna) sono parole, e in
+   monospazio spaziato a 0,1 em avevano l'aria di un terminale. Passano al
+   carattere del testo, piccolo, maiuscolo e in neretto leggero: la gerarchia
+   resta, il rumore no. Il colore non cambia, e con esso i contrasti misurati
+   qui sopra. */
+.adm-scope__label, .adm-out__label {
+  font-family: var(--text); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+.adm-scope strong { font-size: 14.5px; font-weight: 700; color: var(--adm-ink); }
+.adm-scope em { font-style: normal; font-size: 12.5px; line-height: 1.4; color: var(--adm-muted); }
+
+.adm-navgroup { display: flex; flex-direction: column; gap: 2px; }
+.adm-navgroup__label {
+  padding: 0 10px 6px;
+  font-family: var(--text); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+.adm-navitem {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; height: 34px; padding: 0 10px;
+  border: none; border-radius: var(--adm-r);
+  background: transparent;
+  font-family: var(--text); font-size: 14px; color: var(--adm-body);
+  cursor: pointer; text-align: left;
+}
+.adm-navitem:hover { background: var(--adm-hover); }
+/* La voce attiva: prima era un filo a sinistra su un rettangolo vivo, e il
+   filo spostava il testo di due pixel rispetto alle voci sopra e sotto. Ora
+   il segno è dentro la voce — un'asticella arrotondata — e il testo di tutte
+   le voci sta sulla stessa verticale. */
+.adm-navitem { position: relative; }
+.adm-navitem[aria-current="true"] {
+  background: var(--adm-attivo);
+  font-weight: 600; color: var(--adm-ink);
+}
+.adm-navitem[aria-current="true"]::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 3px; border-radius: 2px; background: var(--adm-accento);
+}
+.adm-navitem span:first-child { flex: 1; }
+.adm-navitem__tag { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--adm-label); }
+.adm-navitem__tag--gdpr {
+  padding: 1px 6px; border: 1px solid var(--adm-stop-bordo); border-radius: 999px;
+  font-size: 10px; color: var(--adm-stop-testo); background: var(--adm-stop-fondo);
+}
+
+.adm-out {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 12px 14px; border: 1px dashed var(--adm-bordo-comando);
+  border-radius: var(--adm-r);
+}
+.adm-out p { font-size: 13px; line-height: 1.45; color: var(--adm-muted); }
+
+.adm-links { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
+.adm-links a {
+  padding: 0 10px; font-size: 13px; color: var(--adm-muted);
+}
+.adm-links a:hover { color: var(--adm-ok-testo); }
+
+.adm-main { display: flex; flex-direction: column; gap: 18px; padding: 22px 28px 48px; }
+
+/* --- Intestazione di sezione --------------------------------------------- */
+
+.adm-sec[hidden] { display: none; }
+.adm-sec { display: flex; flex-direction: column; gap: 18px; }
+
+.adm-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; }
+.adm-head__text { display: flex; flex-direction: column; gap: 7px; }
+/* ## I pulsanti stanno sulla riga del titolo
+   Con la testata in due colonne — testo a sinistra, pulsanti a destra — i
+   pulsanti si allineavano in cima alla colonna, cioè al filo di pane: undici
+   pixel di monospazio, venti pixel più su del titolo che dovrebbero
+   accompagnare. La griglia mette il filo di pane sopra, a tutta larghezza,
+   e titolo e pulsanti nella stessa riga, centrati l'uno sull'altro.
+   `display: contents` lascia al markup il suo contenitore del testo. */
+.adm-sec > .adm-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 32px; row-gap: 6px; align-items: center;
+}
+.adm-sec > .adm-head > .adm-head__text { display: contents; }
+.adm-sec > .adm-head .adm-crumb,
+.adm-sec > .adm-head .adm-note { grid-column: 1 / -1; }
+.adm-sec > .adm-head .adm-title { grid-column: 1; grid-row: 2; }
+.adm-sec > .adm-head > .adm-actions { grid-column: 2; grid-row: 2; justify-content: flex-end; }
+.adm-sec > .adm-head .adm-note { grid-row: 3; }
+.adm-crumb { font-size: 12.5px; color: var(--adm-muted); }
+.adm-title { font-family: var(--text); font-size: 25px; font-weight: 700; letter-spacing: -0.01em; color: var(--adm-ink); }
+.adm-note { font-size: 14.5px; line-height: 1.5; color: var(--adm-muted); }
+.adm-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ## Perché `inline-flex` e non il rettangolo di prima
+   Metà dei pulsanti dell'area non sono `<button>` ma `<a>`: «Anteprima
+   pubblica», «Esporta per uscita», «Sito ↗», tutte le voci della dashboard. Su
+   un `<button>` il browser centra il testo da sé; su un link no, e con
+   `display: block` il testo restava incollato in cima — misurato: un pixel
+   sopra e quattordici sotto, in una scatola alta 34. Nella stessa riga di
+   comandi un pulsante aveva la scritta al centro e il link accanto in alto.
+   `align-items` e `justify-content` la centrano nei due sensi, per entrambi.
+
+   ## Perché `min-height` e non `height`
+   Tre contesti chiedono un pulsante più piccolo — 26 px nelle righe di
+   tabella, 28 in testa alle tabelle, 24 sotto i provini — e lo chiedevano con
+   `min-height`, che però non può scendere sotto un `height` dichiarato: erano
+   tutti e tre alti 34 come gli altri, e la richiesta non arrivava a
+   destinazione. Da qui in giù l'altezza è un minimo, così quelle tre regole
+   fanno quello che dicono e un pulsante con la scritta su due righe cresce
+   invece di tagliarla. */
+.adm-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: var(--adm-comando); padding: 0 16px;
+  border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r); background: var(--adm-superficie);
+  box-shadow: 0 1px 1px rgba(0, 24, 47, 0.04);
+  font-family: var(--text); font-size: 14px; font-weight: 600; line-height: 1.2;
+  color: var(--adm-ink); white-space: nowrap; cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.adm-btn:hover { border-color: var(--adm-muted); background: var(--adm-locked); }
+.adm-btn--primary { border-color: var(--adm-primario); background: var(--adm-primario); color: #fff; }
+.adm-btn--primary:hover { border-color: var(--adm-primario-premuto); background: var(--adm-primario-premuto); }
+/* L'anello di fuoco: prima era quello del browser, che su un rettangolo
+   smussato disegna un rettangolo vivo. */
+.adm-btn:focus-visible,
+.adm-field input:focus-visible,
+.adm-field select:focus-visible,
+.adm-field textarea:focus-visible,
+.adm-comando select:focus-visible {
+  outline: 2px solid var(--adm-accento); outline-offset: 1px;
+}
+.adm-field input:focus,
+.adm-field select:focus,
+.adm-field textarea:focus { border-color: var(--adm-accento); }
+
+/* --- Indicatori ----------------------------------------------------------- */
+
+.adm-kpi {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--adm-superficie); border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra); overflow: hidden;
+}
+.adm-kpi__cell {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 16px 20px; border-right: 1px solid var(--adm-line-soft);
+}
+.adm-kpi__cell:last-child { border-right: none; }
+.adm-kpi__label {
+  font-family: var(--text); font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+.adm-kpi__value { font-size: 24px; font-weight: 700; line-height: 1.15; color: var(--adm-ink); }
+.adm-kpi__value--red { color: var(--adm-rosso); }
+
+/* --- Avviso --------------------------------------------------------------- */
+
+.adm-notice {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 18px;
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); border-left: 3px solid var(--red);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+/* `line-height` uguale a quella del paragrafo accanto (14,5 × 1,5): così
+   l'etichetta e la prima riga del testo hanno la stessa linea di base, senza
+   il `padding-top` a occhio che c'era prima. */
+.adm-notice__tag {
+  font-family: var(--text); font-size: 11.5px; font-weight: 700; line-height: 21.75px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-rosso);
+  white-space: nowrap;
+}
+.adm-notice p { flex: 1; font-size: 14.5px; line-height: 1.5; color: var(--adm-body); }
+.adm-notice a { font-size: 14px; font-weight: 600; white-space: nowrap; }
+
+/* --- Tabelle -------------------------------------------------------------- */
+
+.adm-table { display: flex; flex-direction: column; gap: 10px; }
+.adm-table__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 0 2px;
+}
+.adm-table__head h2 { font-family: var(--text); font-size: 17px; font-weight: 700; color: var(--adm-ink); }
+/* Il conto accanto al titolo di una tabella («11 voci», «17 funzioni · 3
+   ruoli») è l'unica etichetta che sta **fuori** dal riquadro bianco, sul
+   fondo della pagina: là `--adm-label` fa 4,06 e non basta. Vale la regola
+   scritta sopra, ed è il caso che l'ha fatta scrivere. */
+.adm-table__meta { font-size: 13px; color: var(--adm-muted); }
+.adm-table__box {
+  background: var(--adm-superficie); border: 1px solid var(--adm-line); overflow-x: auto;
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+
+.adm-tr {
+  display: grid; gap: 16px; padding: 12px 18px; align-items: center;
+  border-bottom: 1px solid var(--adm-line-soft);
+}
+.adm-tr:last-child { border-bottom: none; }
+
+/* ## Le parole che non si spezzano
+   Una colonna di questa interfaccia porta contenuto scritto da qualcun altro, e
+   ogni tanto quel contenuto è una parola sola e lunghissima: il titolo di un
+   documento che è il nome del file
+   (`Modulo_di_iscrizione_anno_sociale_2026_2027_con_consenso_immagini.pdf`), un
+   indirizzo di posta di una segreteria, il nome di un file caricato. Senza una
+   guardia quella parola non va a capo: esce dalla cella e passa **sopra** la
+   colonna accanto — misurati 204 px nella tabella dei documenti e 232 in quella
+   degli account, con le intestazioni delle colonne vicine rese illeggibili.
+
+   `anywhere` e non `break-word`: sono quasi uguali, ma solo `anywhere` conta
+   anche nel calcolo della larghezza minima del contenuto. In una griglia è
+   quello che serve — con `break-word` la colonna resterebbe larga quanto la
+   parola e a sfondare sarebbe la tabella invece della cella.
+
+   Si applica dove la colonna è stretta e il contenuto non è nostro: le celle
+   delle righe di tabella e i campi delle righe di persone. Non serve nei
+   paragrafi di prosa, che vanno a capo da soli. */
+.adm-tr > *,
+.adm-persone__riga .adm-field { min-width: 0; overflow-wrap: anywhere; }
+/* La pastiglia di stato viene dal sito pubblico (`.pill` di site.css), dove
+   `align-self: flex-start` serve: lì sta in cima a una scheda impilata e non
+   deve allungarsi. Qui invece è una cella in una riga che centra tutto, e quel
+   `flex-start` la lasciava sette pixel più su del pulsante accanto — nel
+   calendario di gruppo, «pubblicato» e «Modifica» sulla stessa riga non erano
+   sulla stessa linea. Si rimette al centro qui, nell'area, senza toccare il
+   foglio del sito da cui dipendono le pagine pubbliche. */
+.adm-tr > .pill, .adm-tr > .year-badge { align-self: center; }
+.adm-tr--head {
+  padding: 10px 18px; background: var(--adm-head);
+  border-bottom: 1px solid var(--adm-line);
+}
+.adm-tr--locked { background: var(--adm-locked); }
+/* Un pulsante in una riga di tabella è un comando fra i dati: più basso di
+   quelli dei moduli, così la riga resta una riga e non un elenco di pulsanti. */
+.adm-tr .adm-btn { min-height: 32px; padding: 0 12px; font-size: 13px; }
+
+.adm-th {
+  font-family: var(--text); font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+.adm-th:last-child { text-align: right; }
+
+.c-txt { font-size: 14.5px; color: var(--adm-ink); }
+.c-strong { font-size: 14.5px; font-weight: 600; color: var(--adm-ink); }
+.c-muted { font-size: 14px; color: var(--adm-muted); }
+.c-mono { font-family: var(--mono); font-size: 13px; color: var(--adm-body); }
+.c-mono-dim { font-family: var(--mono); font-size: 13px; color: var(--adm-muted); }
+.c-mono-right { font-family: var(--mono); font-size: 13px; color: var(--adm-body); text-align: right; }
+.c-mono-right-ok { font-family: var(--mono); font-size: 13px; color: var(--adm-ok-testo); text-align: right; }
+.c-mono-ok { font-family: var(--mono); font-size: 13px; color: var(--adm-ok-testo); }
+.c-mono-warn { font-family: var(--mono); font-size: 13px; color: var(--adm-wait-testo); }
+.c-mono-alert { font-family: var(--mono); font-size: 13px; color: var(--adm-rosso); }
+.c-right {
+  display: flex; justify-content: flex-end; gap: 12px;
+  font-size: 13.5px; color: var(--adm-accento);
+}
+.c-right-dim {
+  display: flex; justify-content: flex-end; gap: 12px;
+  font-size: 12.5px; color: var(--adm-label);
+}
+/* Una cella che non è un comando ma vuole stare a destra, sotto
+   un'intestazione che sta a destra: l'ultima colonna del registro. */
+.c-a-destra { text-align: right; }
+
+.adm-pill {
+  display: inline-flex; align-items: center; align-self: center; width: fit-content;
+  height: 22px; padding: 0 9px; border: 1px solid; border-radius: 999px;
+  font-family: var(--text); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
+}
+.adm-pill--ok { border-color: var(--adm-ok-bordo); background: var(--adm-ok-fondo); color: var(--adm-ok-testo); }
+.adm-pill--wait { border-color: var(--adm-wait-bordo); background: var(--adm-wait-fondo); color: var(--adm-wait-testo); }
+.adm-pill--draft { border-color: var(--adm-bordo-comando); background: var(--adm-head); color: var(--adm-muted); }
+.adm-pill--stop { border-color: var(--adm-stop-bordo); background: var(--adm-stop-fondo); color: var(--adm-stop-testo); }
+
+/* La password di un album: il campo e il pulsante che ne propone un'altra,
+   sulla stessa riga finché c'è spazio. Il campo è in carattere monospaziato
+   perché è un testo da ricopiare, non da leggere. */
+.adm-password { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.adm-password input { flex: 1 1 14ch; min-width: 0; letter-spacing: 0.04em; }
+/* Il richiamo nell'elenco per un album che non ha ancora la password: gli
+   stessi colori di «in attesa», perché è una cosa da fare e non un guasto. */
+.adm-btn--avviso { border-color: var(--adm-wait-bordo); background: var(--adm-wait-fondo); color: var(--adm-wait-testo); }
+
+/* --- Modulo --------------------------------------------------------------- */
+
+.adm-form {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 22px 24px; background: var(--adm-superficie); border: 1px solid var(--adm-line);
+  border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+}
+.adm-form[hidden] { display: none; }
+.adm-form h2 { font-family: var(--text); font-size: 17px; font-weight: 700; color: var(--adm-ink); }
+.adm-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+.adm-field { display: flex; flex-direction: column; gap: 6px; }
+/* Le etichette dei campi: testo e non monospazio (§ «Le etichette non sono
+   dati», più sopra), e non più in maiuscolo — sopra un campo sono la
+   domanda, e una domanda si legge meglio in minuscolo. */
+.adm-field__label {
+  font-family: var(--text); font-size: 13px; font-weight: 600;
+  letter-spacing: 0; color: var(--adm-body);
+}
+.adm-field input {
+  height: var(--adm-comando); padding: 0 11px;
+  border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r); background: var(--adm-superficie);
+  font-family: var(--text); font-size: 14.5px; color: var(--adm-ink);
+}
+.adm-field input[readonly] { border-color: var(--adm-line-sola-lettura); background: var(--adm-head); color: var(--adm-muted); }
+/* Stesso vestito degli input, che finora non avevano.
+   Le textarea esistevano gia' — la nota di un'attivita', la descrizione di una
+   richiesta GDPR — e uscivano con l'aspetto predefinito del browser in mezzo a
+   un modulo di campi disegnati. Con i testi delle unita' diventano il comando
+   principale di una schermata, e non potevano restare l'unico elemento
+   scoperto. `resize: vertical`: allargarla in orizzontale sfonderebbe la
+   griglia a due colonne. */
+.adm-field textarea {
+  min-height: 96px; padding: 9px 11px;
+  border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r); background: var(--adm-superficie);
+  font-family: var(--text); font-size: 14.5px; line-height: 1.55; color: var(--adm-ink);
+  resize: vertical;
+}
+.adm-field textarea[readonly] { border-color: var(--adm-line-sola-lettura); background: var(--adm-head); color: var(--adm-muted); }
+/* Un campo che occupa tutta la larghezza dentro `adm-form__grid`: serve ai
+   testi lunghi, che in mezza colonna diventano una feritoia. */
+.adm-field--larga { grid-column: 1 / -1; }
+.adm-field__hint { font-size: 13px; line-height: 1.45; color: var(--adm-muted); }
+
+/* --- Menu a tendina ------------------------------------------------------- */
+
+/* I `<select>` erano l'ultimo comando scoperto, e si vedeva a occhio nudo: nel
+   modulo «Registra un'iscrizione», sotto due caselle di testo alte 38 px in
+   Source Sans 14,5, «Anno sociale» ne misurava 19 in Arial 13,3 con il bordo
+   grigio #767676 e gli angoli vivi del sistema. Non era una sfumatura: era
+   metà altezza, un altro carattere e un altro bordo, in mezzo a un modulo
+   disegnato.
+   Sono quattordici, in nove schermate — quota, unità, anno sociale, categoria,
+   ruolo, tipo di attività, colore della striscia, diritto GDPR — e ora portano
+   le stesse misure degli input, perché nella stessa riga di una griglia a due
+   colonne un campo non può essere alto la metà di quello accanto.
+
+   `appearance: none` toglie il vestito del sistema *e con esso la freccetta*,
+   che quindi va ridisegnata: è lo `background-image` qui sotto, un SVG in
+   linea — un file in più per due segmenti sarebbe una richiesta di rete per
+   niente, e nell'area riservata la freccia sta su ogni schermata. Il colore è
+   scritto nel percorso (`%236f6e69`, cioè `--adm-muted` con il cancelletto
+   codificato): dentro un `url()` la variabile CSS non arriva.
+   `padding-right: 32px` è lo spazio che le si lascia: senza, un'opzione lunga
+   — «Autorizzazione al pernottamento» — le finisce sotto. */
+.adm-field select,
+.adm-comando select {
+  height: var(--adm-comando); padding: 0 32px 0 11px;
+  border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r);
+  font-family: var(--text); font-size: 14.5px; color: var(--adm-ink);
+  appearance: none; -webkit-appearance: none;
+  background-color: var(--adm-superficie);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none' stroke='%236f6e69' stroke-width='1.6' stroke-linecap='square'%3E%3Cpath d='M1 1.4 5.5 5.6 10 1.4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  cursor: pointer;
+}
+.adm-field select:hover,
+.adm-comando select:hover { border-color: var(--adm-muted); }
+
+/* Le tendine dentro una riga di tabella — la quota di ciascun iscritto — sono
+   un comando fra i dati, non un campo di modulo: prendono l'altezza dei
+   pulsanti della stessa riga. Da quando pulsanti e campi misurano uguale
+   (`--adm-comando`) è la stessa altezza; resta il corpo più piccolo. */
+.adm-comando select { font-size: 14px; }
+
+/* --- Stati dei comandi ---------------------------------------------------- */
+
+/* ## Il campo sbagliato
+   `aria-invalid` è già nel codice: quarantuno campi in tredici schermate lo
+   accendono quando l'azione del server torna con un errore. Lo diceva alle
+   tecnologie assistive e a nessun altro — il messaggio compariva in fondo al
+   modulo («l'unità è obbligatoria») e i campi restavano tutti identici, con
+   l'onere di indovinare quale fosse addosso a chi guarda. Il bordo rosso e il
+   fondo appena tinto rimettono l'avviso dov'è il guasto.
+   Il colore non è l'unico segno: il messaggio testuale c'era già e resta, che
+   è la ragione per cui questa riga può permettersi di essere solo colore. */
+.adm-field input[aria-invalid="true"],
+.adm-field select[aria-invalid="true"],
+.adm-field textarea[aria-invalid="true"] {
+  border-color: var(--red-dark); background-color: var(--adm-stop-fondo);
+}
+.adm-field input[aria-invalid="true"] + .adm-field__hint { color: var(--adm-stop-testo); }
+
+/* ## Il comando che sta lavorando
+   Quasi cinquanta `disabled={inCorso}` in venti schermate: mentre l'azione del
+   server è in volo, il modulo si blocca. Senza vestito, un pulsante bloccato
+   era identico a uno pronto e la seconda pressione sembrava semplicemente non
+   funzionare. `cursor: not-allowed` e l'opacità dicono che l'attesa è voluta.
+   Non si scende sotto 0,55: a 0,4 il testo di un pulsante navy scende sotto il
+   contrasto minimo, e un comando bloccato va comunque letto. */
+.adm-btn:disabled,
+.adm-field input:disabled,
+.adm-field select:disabled,
+.adm-field textarea:disabled,
+.adm-comando select:disabled {
+  opacity: 0.55; cursor: not-allowed;
+}
+.adm-btn:disabled:hover { border-color: var(--adm-bordo-comando); }
+.adm-btn--primary:disabled:hover { background: var(--adm-primario); }
+.adm-field select:disabled,
+.adm-comando select:disabled { background-color: var(--adm-head); }
+
+/* Lo scatto sotto il dito: due pixel di niente, ma sono la differenza fra un
+   pulsante e un rettangolo con del testo dentro. */
+.adm-btn:active:not(:disabled) { transform: translateY(1px); }
+
+/* Caselle e pallini prendono il verde del gruppo, come nel sito pubblico
+   (§ site.css, `.consent input`), e una misura da dito anche col mouse: 17 px
+   invece dei 13 del sistema. */
+.adm-form input[type="checkbox"],
+.adm-form input[type="radio"],
+.adm-tr input[type="checkbox"] {
+  width: 17px; height: 17px; flex: none;
+  accent-color: var(--adm-ok-testo); cursor: pointer;
+}
+
+/* La casella di ricerca in barra: sul navy il bordo a 22% di bianco spariva
+   quasi. Al passaggio e mentre si scrive si accende, così si vede che è un
+   campo e non un'etichetta. */
+.adm-search:hover { border-color: rgba(255, 255, 255, 0.38); }
+.adm-search:focus { background: rgba(255, 255, 255, 0.14); }
+
+/* --- Elenchi di persone --------------------------------------------------- */
+
+/* Una riga per persona: nome, ruolo, periodo, nota, e il pulsante per toglierla.
+   Non e' una `adm-table` perche' non e' una tabella da leggere ma un modulo da
+   compilare, e le celle sono campi. Su telefono le colonne diventano una. */
+.adm-persone { display: flex; flex-direction: column; gap: 10px; }
+.adm-persone__riga {
+  display: grid; gap: 10px; align-items: end;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 120px minmax(0, 1.2fr) 64px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--adm-line);
+}
+.adm-persone__riga:last-of-type { border-bottom: 0; }
+/* Sul largo le etichette si leggono sulla prima riga, che fa da intestazione;
+   nelle righe sotto spariscono alla vista ma non ai lettori di schermo,
+   perché sono le etichette dei campi. Ripetute a ogni riga, un elenco di otto
+   referenti storici era un muro di «Nome · Soprannome o ruolo · Anni · Nota». */
+@media (min-width: 701px) {
+  .adm-persone__riga ~ .adm-persone__riga .adm-field__label {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+}
+/* la nota c'e' solo nello storico: senza, la riga ha quattro colonne */
+.adm-persone__riga--senza-nota {
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr) 130px 64px;
+}
+/* L'elenco degli account riusa questa griglia ma l'ultima colonna non e' un
+   bottone «togli» da 64 px: ci stanno «Rifai l'invito» e «Revoca», oppure una
+   riga di testo. Con i 64 px la colonna sfondava di una ventina di pixel il
+   riquadro e i due pulsanti restavano tagliati a meta' su uno schermo da
+   1280 — visibili solo scorrendo di lato una tabella che non sembra
+   scorrevole. Le colonne sono in `fr` perche' i nomi utente e i ruoli sono di
+   lunghezza molto diversa, e l'ultima ha un minimo in pixel perche' e' quella
+   che non puo' stringersi. */
+.adm-persone__riga--account {
+  /* L'ultima colonna è larga quanto tre pulsanti in fila, e **fissa**: ogni riga è
+     una griglia a sé, e con una misura che dipende dal contenuto le colonne di
+     righe con due pulsanti e righe con tre non si allineavano fra loro. Sotto i
+     1100 px non c'è posto e i pulsanti vanno a capo. */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 150px 340px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .adm-persone__riga--account { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 150px minmax(0, 1.3fr); }
+}
+/* Lo stesso inciampo dell'elenco account, in un'altra schermata: «Stato del
+   sistema» riusa questa griglia per una tabella di controlli, e la sua quarta
+   cella non e' il pulsante «togli» ma la nota che spiega il controllo — «con
+   WAL le letture non si bloccano mentre qualcuno scrive». In 64 px quella frase
+   scendeva una parola per riga, la riga diventava alta duecento pixel e certe
+   note si tagliavano a meta' parola. Qui la colonna larga e' l'ultima, perche'
+   e' quella che porta il testo; l'esito e' una pastiglia e sta nei suoi 130 px.
+   `align-items: start` e non `end`: una nota su tre righe deve allinearsi in
+   cima al proprio controllo, non al fondo della riga. */
+.adm-persone__riga--controllo {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.7fr) 130px minmax(0, 2.2fr);
+  align-items: start;
+}
+.adm-persone__vuoto {
+  padding: 14px 0; font-size: 14px; color: var(--adm-muted);
+}
+/* ## Quando l'elenco è una tabella da leggere
+   «Utenti e ruoli» e «Stato del sistema» mettono questa griglia dentro un
+   riquadro di tabella. Lì la riga non aveva margini — il testo toccava il
+   bordo sinistro del riquadro — e tre account sembravano tre moduli
+   impilati. Dentro il riquadro la riga prende i margini di una riga di
+   tabella (le etichette sulla sola prima riga le toglie la regola sopra), e
+   il valore passa al corpo del testo: fuori da un modulo non è un campo. */
+.adm-table__box > .adm-persone { gap: 0; }
+.adm-table__box .adm-persone__riga {
+  padding: 14px 18px; border-bottom-color: var(--adm-line-soft);
+  font-size: 14.5px; color: var(--adm-ink);
+}
+.adm-table__box .adm-persone__riga .adm-field__label {
+  font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+}
+@media (min-width: 701px) {
+  .adm-table__box .adm-persone__riga:first-child { padding-top: 12px; }
+}
+/* L'ultima colonna degli account porta uno o due pulsanti: in fila, alla
+   loro misura, invece che stirati a tutta colonna uno sotto l'altro. */
+.adm-persone__riga--account > .adm-field:last-child {
+  flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px;
+  /* a destra, con il resto dell'intestazione «Gestione»: i pulsanti di tutte
+     le righe finiscono sullo stesso bordo, non dove capita il loro numero */
+  justify-content: flex-end;
+}
+.adm-persone__riga--account > .adm-field:last-child > .adm-field__label { flex-basis: 100%; text-align: right; }
+/* Il modulo di modifica che si apre sotto una riga: incassato, a tutta larghezza */
+.adm-form--incassato { margin: 0 18px 14px; }
+@media (max-width: 700px) {
+  .adm-persone__riga--account > .adm-field:last-child { justify-content: flex-start; }
+  .adm-persone__riga--account > .adm-field:last-child > .adm-field__label { text-align: left; }
+  .adm-form--incassato { margin: 0 0 10px; }
+}
+/* La pastiglia di stato dentro una cella a colonna: `align-self: center` (che
+   in una riga di tabella la centra in verticale) qui la centrava in
+   orizzontale, lontana dall'intestazione «Esito» che sta a sinistra. */
+.adm-persone__riga .adm-field > .adm-pill { align-self: flex-start; }
+.adm-persone__riga--account > .adm-field:last-child .adm-btn { min-height: 32px; padding: 0 12px; font-size: 13px; }
+
+@media (max-width: 700px) {
+  /* L'avviso al telefono: etichetta sopra e testo a tutta larghezza. A fianco
+     l'etichetta si prendeva un terzo della riga, e dove l'avviso ha due
+     paragrafi (la matrice dei permessi) il testo finiva in due colonne da
+     tre parole l'una. */
+  .adm-notice { flex-direction: column; gap: 6px; }
+  /* Al telefono il riquadro della tabella sparisce (le righe diventano schede,
+     § più sotto): le righe di persone devono diventare schede anche loro,
+     invece di restare testo sciolto sul fondo della pagina. */
+  .adm-table__box > .adm-persone { gap: 10px; }
+  .adm-table__box .adm-persone__riga {
+    background: var(--adm-superficie); border: 1px solid var(--adm-line) !important;
+    border-radius: var(--adm-r-box); box-shadow: var(--adm-ombra);
+  }
+  .adm-persone__riga,
+  .adm-persone__riga--senza-nota,
+  .adm-persone__riga--account,
+  .adm-persone__riga--controllo { grid-template-columns: minmax(0, 1fr); }
+}
+/* `wrap`: due pulsanti con l'etichetta lunga — «Salva le preferenze» e
+   «Rimetti i valori predefiniti» — sommano piu' della larghezza di un
+   telefono stretto, e senza andare a capo trascinavano di lato l'intera
+   pagina del profilo. */
+.adm-form__actions {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 4px;
+}
+
+/* --- Selettore di sezione per schermi stretti ----------------------------- */
+
+.adm-picker { display: none; }
+
+@media (max-width: 900px) {
+  .adm-shell { grid-template-columns: minmax(0, 1fr); }
+  .adm-side { display: none; }
+
+  .adm-picker {
+    display: flex; flex-direction: column; gap: 6px;
+    position: sticky; top: var(--adm-bar); z-index: 20;
+    padding: 10px 16px;
+    background: var(--adm-panel); border-bottom: 1px solid var(--adm-line);
+  }
+  .adm-picker label {
+    font-family: var(--text); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--adm-label);
+  }
+  /* Il menu di sezione resta più alto degli altri — 44 px, misura da dito — ma
+     porta la stessa freccia disegnata (§ «Menu a tendina» più sopra). Il fondo
+     va scritto con `background-color` e non con la scorciatoia `background`:
+     quella azzera anche `background-image`, e la freccia sparirebbe. */
+  .adm-picker select {
+    height: 44px; padding: 0 34px 0 11px;
+    border: 1px solid var(--adm-bordo-comando); border-radius: var(--adm-r);
+    font-family: var(--text); font-size: 15px; color: var(--adm-ink);
+    appearance: none; -webkit-appearance: none;
+    background-color: var(--adm-superficie);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none' stroke='%236f6e69' stroke-width='1.6' stroke-linecap='square'%3E%3Cpath d='M1 1.4 5.5 5.6 10 1.4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 13px center;
+    cursor: pointer;
+  }
+  .adm-picker__links {
+    display: flex; flex-wrap: wrap; gap: 10px 16px; padding-top: 4px;
+    font-size: 13px;
+  }
+
+  .adm-main { padding: 16px 16px 40px; }
+  .adm-head { flex-direction: column; gap: 12px; }
+  .adm-sec > .adm-head { grid-template-columns: minmax(0, 1fr); }
+  .adm-sec > .adm-head > .adm-actions { grid-column: 1; grid-row: 4; justify-content: flex-start; padding-top: 4px; }
+  .adm-title { font-size: 21px; }
+  .adm-kpi { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .adm-kpi__cell:nth-child(2n) { border-right: none; }
+  .adm-kpi__cell:nth-child(-n+2) { border-bottom: 1px solid var(--adm-line-soft); }
+  .adm-form__grid { grid-template-columns: minmax(0, 1fr); }
+
+  /* le tabelle diventano schede impilate */
+  .adm-table__box { border: none; background: transparent; overflow: visible; box-shadow: none; }
+  /* la matrice dei permessi è una <table> vera e non si impila come le
+     altre: senza questo scorrimento sfonda lo schermo del telefono */
+  .adm-table__box:has(.matrice) { overflow-x: auto; }
+  .adm-tr--head { display: none; }
+  .adm-tr {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 6px; padding: 14px 16px;
+    background: var(--adm-superficie); border: 1px solid var(--adm-line); border-radius: var(--adm-r-box);
+    box-shadow: var(--adm-ombra); margin-bottom: 10px; align-items: start;
+  }
+  .adm-tr:last-child { margin-bottom: 0; }
+  /* Impilando le celle si perde la riga di intestazione, e le celle che
+     contengono un numero e basta restano senza significato: nella scheda di un
+     album, sotto «Luglio 2026», compariva uno «0» solo. `data-etichetta`
+     rimette davanti al valore il nome della colonna, e **solo qui**: sul largo
+     l'intestazione c'e' gia' e ripeterla sarebbe rumore. Va messo sulle celle
+     che da sole non si spiegano — un numero, una data secca — non su quelle
+     che portano gia' la propria parola. */
+  .adm-tr > [data-etichetta]::before {
+    content: attr(data-etichetta) " ";
+    font-family: var(--text); font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--adm-label);
+  }
+  .c-right, .c-right-dim, .c-mono-right, .c-mono-right-ok, .c-a-destra { justify-content: flex-start; text-align: left; }
+  .adm-pill { align-self: flex-start; }
+}
+
+@media (max-width: 560px) {
+  .adm-bar { gap: 10px; padding: 0 12px; }
+  .adm-bar__sep, .adm-badge, .adm-role { display: none; }
+  .adm-search { width: 100%; min-width: 0; }
+  .adm-kpi { grid-template-columns: minmax(0, 1fr); }
+  .adm-kpi__cell { border-right: none; border-bottom: 1px solid var(--adm-line-soft); }
+  .adm-kpi__cell:last-child { border-bottom: none; }
+}
+
+.adm-totp-qr { width: min(100%, 240px); margin-block: 16px; }
+.adm-totp-qr svg { display: block; width: 100%; height: auto; }

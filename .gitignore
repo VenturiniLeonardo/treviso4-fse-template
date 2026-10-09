@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# Archivi: una copia del progetto può contenere web/dati/ e .env.local
+/*.zip
+
+# Le regole di web/ stanno in web/.gitignore

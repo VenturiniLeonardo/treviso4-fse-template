@@ -1,0 +1,43 @@
+node_modules/
+.next/
+# Ogni compilazione accanto a quella vera, con SITO_DIST_DIR: le sessioni
+# parallele ne usano una a testa (.next-verifica, .next-audit, .next-bozzetto…),
+# e una cartella compilata non deve poter entrare con un `git add -A`.
+/.next-*/
+# La compilazione del pacchetto statico pubblico, che va in una cartella sua per
+# non sostituire quella di produzione. Vedi distDir in next.config.ts.
+.next-pubblico/
+# La compilazione di `SITO_DIST_DIR=.next-verifica npm run verifica`, che non
+# deve riscrivere la `.next` di un `next dev` in corso.
+.next-verifica/
+next-env.d.ts
+.env*.local
+
+# Dati scritti dal sito mentre gira (identità del gruppo, marchio caricato)
+dati/
+tsconfig.tsbuildinfo
+
+# Credenziali dei referenti: hash delle password, mode 600. Mai nel repository.
+# La forma del file è in utenti.esempio.json.
+utenti.json
+
+# Database SQLite e i suoi file di appoggio WAL
+*.db
+*.db-wal
+*.db-shm
+
+# Le copie di sicurezza: dentro c'è il database intero — nomi, date di nascita e
+# consensi di minori — e l'archivio delle fotografie. `*.db` non basta: la copia
+# è una **cartella**, con dentro il database, l'archivio e il manifesto, e
+# `git add -A` la prenderebbe tutta.
+#
+# In produzione stanno fuori dal repository (SITO_COPIE_DIR, di norma
+# /srv/sito/copie). Questa riga serve a quando si prova in locale.
+copie/
+
+# Le fotografie originali: possono avere volti di minori e coordinate GPS
+# nell'EXIF. Ciascun gruppo decide se versionarle; nel dubbio restano fuori.
+/foto-originali/**/*.jpg
+/foto-originali/**/*.jpeg
+/foto-originali/**/*.heic
+/foto-originali/**/*.png

@@ -1,0 +1,82 @@
+{
+  "name": "sito-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sito pubblico e area riservata per un'organizzazione divisa in unità (Next.js + SQLite)",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "postbuild": "D=\"${SITO_DIST_DIR:-.next}\"; rm -rf \"$D/standalone/public\" \"$D/standalone/$D/static\" \"$D/standalone/dati\" && cp -r public \"$D/standalone/\" && cp -r \"$D/static\" \"$D/standalone/$D/\"",
+    "start": "node --env-file-if-exists=.env.local .next/standalone/server.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --experimental-test-module-mocks --import ./scripts/registra-alias.mjs --test \"test/**/*.test.mjs\" \"test/**/*.test.mts\"",
+    "test:sicurezza": "node --experimental-strip-types --import ./scripts/registra-alias.mjs --test test/accessi.test.mjs test/secondo-fattore.test.mjs test/secondo-fattore-limite.test.mjs test/password.test.mjs test/totp.test.mjs test/cifratura.test.mjs test/indirizzo-client.test.mjs test/permessi-cancello.test.mjs test/autorizzazioni.test.mjs test/sicurezza-sorgenti.test.mjs test/csp.test.mjs test/anteprima-ambito.test.mjs test/documento-ambito.test.mjs test/album-accesso.test.mjs test/profilo-account.test.mjs",
+    "test:sicurezza:http": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/verifica-accessi-http.mjs",
+    "verifica": "node scripts/verifica.mjs",
+    "loghi": "node scripts/loghi.mjs",
+    "dopo-build": "node scripts/dopo-build.mjs",
+    "cache-pagine": "node scripts/cache-pagine.mjs",
+    "ovh:chiave": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/ovh-chiave.mjs",
+    "posta:prova": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/posta.mjs",
+    "db:genera": "drizzle-kit generate && node scripts/strict.mjs",
+    "db:applica": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/applica.mjs",
+    "db:copia": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/copia.mjs",
+    "db:ripristina": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/ripristina.mjs",
+    "db:riferimenti": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/riferimenti.mjs",
+    "db:permessi": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/permessi.mjs",
+    "db:derivate": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/derivate.mjs",
+    "db:importa-album": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/importa-album.mjs",
+    "db:importa-attivita": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/importa-attivita.mjs",
+    "db:foto-sito": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/foto-sito.mjs",
+    "db:importa-utenti": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/importa-utenti.mjs",
+    "db:account-iniziali": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/account-iniziali.mjs",
+    "db:prepara-produzione": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/prepara-produzione.mjs",
+    "db:invita": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/invita.mjs",
+    "db:pulizia": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/notturno.mjs",
+    "db:notturno": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/notturno.mjs",
+    "db:orfani": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/orfani.mjs",
+    "db:schema": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/schema-atteso.mjs",
+    "db:conti": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/conti.mjs",
+    "db:metadati": "node --experimental-strip-types --import ./scripts/registra-alias.mjs scripts/metadati.mjs",
+    "db:ispeziona": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "better-sqlite3": "12.11.1",
+    "drizzle-orm": "^0.45.2",
+    "hash-wasm": "4.12.0",
+    "html-to-image": "1.11.11",
+    "next": "16.3.8",
+    "nodemailer": "^10.0.13",
+    "qrcode-generator": "2.0.4",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22.18.8",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.11",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.37.0",
+    "eslint-config-next": "16.3.8",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.26",
+    "sharp": "$sharp",
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.12"
+    }
+  }
+}

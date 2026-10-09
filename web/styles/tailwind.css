@@ -1,0 +1,54 @@
+/* Tailwind per la sola area riservata (§04 del piano).
+   Il sito pubblico resta su site.css: le millequattrocento righe già collaudate
+   non si riscrivono in classi di utilità.
+
+   Preflight è ESCLUSO di proposito. Il reset di Tailwind azzererebbe margini,
+   titoli e liste su cui site.css e admin.css contano, e l'area riservata carica
+   entrambi. Importando solo `theme` e `utilities` si ottengono le classi senza
+   toccare gli stili di base — è il modo documentato per disattivare preflight
+   in Tailwind 4. */
+
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "../app/(area)";
+@source "../components/area";
+
+/* Tavolozza condivisa: gli stessi valori di site.css, così un componente nuovo
+   in Tailwind e uno vecchio in CSS non possono divergere di una sfumatura. */
+@theme {
+  --color-navy-900: #00182f;
+  --color-navy-800: #002144;
+  --color-navy-600: #003366;
+  --color-green-600: #006633;
+  --color-green-800: #00512a;
+  --color-yellow: #ffcc00;
+  --color-yellow-soft: #ffdd66;
+  --color-yellow-ink: #7a5c00;
+  --color-red: #a5342c;
+  --color-red-dark: #8c2b24;
+
+  --font-display: var(--display);
+  --font-sans: var(--text);
+  --font-mono: var(--mono);
+}
+
+/* Superfici e testo dell'area riservata: **rimandi** alle variabili di
+   admin.css, non copie. Erano valori scritti qui a mano, e con il tema scuro
+   una copia sarebbe rimasta chiara — `inline` fa sì che la classe usi
+   `var(--adm-…)` com'è, con i suoi due valori. Le copie avevano anche già
+   divergito: `adm-muted` e `adm-label` erano ancora i grigi di prima della
+   correzione dei contrasti. */
+@theme inline {
+  --color-adm-ink: var(--adm-ink);
+  --color-adm-body: var(--adm-body);
+  --color-adm-muted: var(--adm-muted);
+  --color-adm-label: var(--adm-label);
+  --color-adm-line: var(--adm-line);
+  --color-adm-line-soft: var(--adm-line-soft);
+  --color-adm-head: var(--adm-head);
+  --color-adm-panel: var(--adm-panel);
+  --color-adm-locked: var(--adm-locked);
+  --color-adm-superficie: var(--adm-superficie);
+}

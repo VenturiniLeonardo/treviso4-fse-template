@@ -1,0 +1,24 @@
+[
+  {
+    "utente": "ref1",
+    "ruolo": "referente",
+    "nome": "Ref1 — Nome Cognome",
+    "iniziali": "AK",
+    "unita": "u1",
+    "hash": "GENERATELO-CON scripts/hash-password.mjs"
+  },
+  {
+    "utente": "gestori",
+    "ruolo": "gestore",
+    "nome": "Nome Cognome",
+    "iniziali": "CG",
+    "hash": "GENERATELO-CON scripts/hash-password.mjs"
+  },
+  {
+    "utente": "sviluppatore",
+    "ruolo": "sviluppatore",
+    "nome": "Tu (sviluppatore)",
+    "iniziali": "SV",
+    "hash": "GENERATELO-CON scripts/hash-password.mjs"
+  }
+]

@@ -1,0 +1,1966 @@
+/* ==========================================================================
+   Foglio di stile del sito pubblico
+   Ricavato dal mockup del progetto grafico.
+   ========================================================================== */
+
+/* --- 1. Variabili ------------------------------------------------------- */
+
+:root {
+  /* colori istituzionali */
+  --navy-900: #00182f;   /* piede */
+  --navy-800: #002144;   /* barra, titoli */
+  --navy-600: #003366;   /* link e accenti blu */
+  --green-600: #006633;  /* verde primario */
+  --green-800: #00512a;  /* verde scuro */
+  --yellow: #ffcc00;
+  --yellow-soft: #ffdd66;
+  --yellow-ink: #7a5c00;
+  --red: #a5342c;
+  --red-dark: #8c2b24;
+
+  /* L'arancione del gestore.
+     Due valori perché uno solo non basta: #ff7f26 su bianco dà 2,5:1 e come
+     testo non si legge (WCAG chiede 4,5:1). Serve pieno — come fondo, o su
+     navy, dove arriva a 5:1 — e serve la versione scura quando fa da testo su
+     fondo chiaro, che è lo stesso mestiere di --yellow-ink per il giallo.
+     #b85400 è lo stesso arancione portato a 4,7:1 sul bianco. */
+  --orange: #ff7f26;
+  --orange-ink: #b85400;
+
+  /* superfici */
+  --bg: #fbfaf7;
+  --bg-alt: #f4f2ec;
+  --bg-shell: #eceae5;
+  --surface: #ffffff;
+  --line: #e7e3db;
+  --line-strong: #ddd9d2;
+  --line-soft: #eee9e0;
+  --rule: #d9d4ca;
+
+  /* testo */
+  --ink: #002144;
+  --body: #4c5261;
+  --muted: #6b6a66;
+  /* Il grigio del testo tenue. Era #8b8880, che sul fondo chiaro dà 3,39:1 —
+     sotto il 4,5 di WCAG 1.4.3 AA, e lo usano le note, i suggerimenti dei
+     moduli, i conteggi e le briciole. Misurato in browser su tutte le
+     superfici, non stimato: questo dà 4,61 sulla più scura (--bg-alt) e 5,16
+     sul bianco. */
+  --muted-2: #706d66;
+  /* ATTENZIONE: --muted-3 è **decorazione, non testo**. A 2,45:1 sul bianco è
+     fuori norma per qualunque scritta, e ci stava sopra: conteggi, chevron e
+     date piccole sono passati a --muted-2. Qui restano solo bordi e campiture,
+     dove la soglia è 3:1 per gli elementi d'interfaccia e non si applica
+     affatto a un tratteggio decorativo. Non rimettetelo su del testo. */
+  --muted-3: #a8a5a0;
+
+  /* misure */
+  --page: 1280px;
+  --gutter: 48px;
+  /* Altezza della barra, usata da quello che si appiccica sotto di lei
+     (filtri, intestazione del mese). Tutte le pagine usano la barra con la
+     pastiglia, quindi è la sua altezza: definita più sotto, in --float-h. */
+  --nav-h: var(--float-h);
+
+  /* caratteri */
+  --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --text: 'Archivo', system-ui, -apple-system, Segoe UI, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* --- 2. Reset e basi ---------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--body);
+  font-family: var(--text);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; }
+/* l'attributo hidden deve vincere sui display dei componenti */
+[hidden] { display: none !important; }
+h1, h2, h3, h4 { margin: 0; font-family: var(--display); color: var(--ink); }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: var(--navy-600); text-decoration: none; }
+a:hover { color: var(--green-600); }
+
+/* Anello di focus: tre colori del sito in sequenza — giallo dentro,
+   blu, verde fuori.
+
+   Non è solo un richiamo: risolve un problema misurabile. Un anello di un solo
+   colore non può funzionare su tutti i fondi del sito, perché il verde contro il
+   navy della barra sta a 2,27:1 (sotto il minimo di 3:1) mentre il giallo contro
+   il fondo chiaro delle pagine sta a 1,45:1. Con tre strati c'è sempre uno strato
+   che stacca: il giallo fa il lavoro sul navy (10,7:1), il blu e il verde sul
+   chiaro (15,5:1 e 6,8:1).
+
+   L'ordine si ottiene sovrapponendo un outline e due ombre: l'outline sta sopra,
+   le ombre crescono verso l'esterno. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 0;
+  box-shadow:
+    0 0 0 4px var(--navy-800),
+    0 0 0 6px var(--green-600);
+}
+
+.skip-link {
+  position: absolute; left: 8px; top: -60px; z-index: 100;
+  padding: 10px 16px; border-radius: 3px;
+  background: var(--yellow); color: var(--navy-800);
+  font-weight: 700;
+  transition: top 120ms ease;
+}
+.skip-link:focus { top: 8px; color: var(--navy-800); }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* --- 3. Impalcatura ----------------------------------------------------- */
+
+.wrap {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.section { padding-top: 76px; }
+.section--tight { padding-top: 56px; }
+.section--wide { padding-top: 88px; }
+
+.band { background: var(--bg-alt); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.band--navy { background: var(--navy-800); color: #fff; }
+.band--green { background: var(--green-600); color: #fff; }
+
+.stack { display: flex; flex-direction: column; }
+.gap-6 { gap: 6px; }  .gap-8 { gap: 8px; }   .gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; } .gap-14 { gap: 14px; } .gap-18 { gap: 18px; }
+.gap-22 { gap: 22px; } .gap-26 { gap: 26px; } .gap-34 { gap: 34px; }
+
+/* --- 4. Tipografia ------------------------------------------------------ */
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--green-600);
+}
+.eyebrow--dark { color: var(--green-800); }
+.eyebrow--yellow { color: var(--yellow); }
+.eyebrow--light { color: rgba(255, 255, 255, 0.75); }
+
+.crumbs {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.crumbs a { color: inherit; }
+.crumbs a:hover { color: var(--green-600); }
+.crumbs [aria-current] { color: var(--ink); }
+
+.crumbs--onphoto { color: rgba(255, 255, 255, 0.7); }
+.crumbs--onphoto a:hover { color: var(--yellow); }
+.crumbs--onphoto [aria-current] { color: var(--yellow-soft); }
+
+.h1 { font-size: 52px; font-weight: 800; line-height: 1.03; letter-spacing: -0.03em; text-wrap: balance; }
+.h2 { font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.025em; text-wrap: balance; }
+.h2--sm { font-size: 36px; }
+.h3 { font-size: 23px; font-weight: 700; line-height: 1.2; letter-spacing: -0.015em; }
+
+.lead { font-size: 19px; line-height: 1.55; color: var(--body); text-wrap: pretty; }
+.prose { font-size: 18.5px; line-height: 1.65; color: var(--body); text-wrap: pretty; }
+.note { font-size: 17px; line-height: 1.6; color: var(--body); text-wrap: pretty; }
+/* Le note piccole sono frasi intere, a volte paragrafi di cinque righe: vanno
+   nel carattere del testo, non nel monospaziato delle etichette. A 12 px
+   Archivo ha la x alta quanto IBM Plex Mono (6,3 contro 6,2 px), quindi la
+   dimensione resta quella. */
+.tiny-note {
+  font-family: var(--text); font-size: 12px;
+  letter-spacing: 0.06em; color: var(--muted-2);
+}
+
+.measure { max-width: 720px; }
+.measure--sm { max-width: 620px; }
+
+/* --- 5. Barra di navigazione -------------------------------------------- */
+
+.navbar {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--navy-800);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.navbar__inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  min-height: 78px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 16px var(--gutter);
+}
+.brand {
+  display: flex; align-items: center; gap: 14px; color: #fff;
+  min-width: 0; flex-shrink: 0;
+}
+.brand:hover { color: #fff; }
+.brand img { height: 42px; width: auto; display: block; flex-shrink: 0; }
+.brand > span {
+  display: flex; flex-direction: column; justify-content: center; min-width: 0;
+}
+.brand__name {
+  display: block; font-family: var(--display); font-weight: 700;
+  font-size: 18px; letter-spacing: -0.01em; line-height: 1.2; color: #fff;
+  white-space: nowrap;
+}
+.brand__sub {
+  display: block; margin-top: 3px;
+  font-family: var(--mono); font-size: 10.5px; line-height: 1.2;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+}
+
+.nav { display: flex; align-items: center; gap: 6px; font-size: 15.5px; font-weight: 600; }
+.nav a {
+  padding: 9px 14px; border-radius: 999px;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+.nav a:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.nav a[aria-current="page"] { background: rgba(255, 255, 255, 0.14); color: #fff; }
+
+.btn-reserved {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px;
+  color: #fff; font-weight: 600; font-size: 15px; white-space: nowrap;
+}
+.btn-reserved:hover { border-color: var(--yellow); color: var(--yellow); }
+/* nella barra estesa vale il pulsante affiancato al menu; dentro il menu a
+   tendina compare solo su schermi stretti */
+.nav .btn-reserved { display: none; }
+
+.nav-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 46px; height: 46px; flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+.nav-toggle span {
+  display: block; width: 20px; height: 2px; margin: 3px 0;
+  background: #fff; transition: transform 160ms ease, opacity 160ms ease;
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+
+/* Barra con la pastiglia: è la barra di TUTTE le pagine.
+   Sulla home è trasparente e la foto le passa sotto; sulle altre pagine, che
+   non hanno una foto in cima, dietro c'è il fondo navy (.navbar--onsheet). */
+:root {
+  --float-pad: 22px;    /* spazio sopra e sotto la pastiglia */
+  --float-bar: 70px;    /* altezza della pastiglia */
+  /* Altezza reale della barra: i due spazi, la pastiglia e il bordo inferiore.
+     Non è un numero a caso e non va scritto a mano: la home tira su la foto
+     esattamente di questo valore, e se non corrisponde all'altezza vera in
+     cima alla pagina resta una striscia di fondo pagina. */
+  --float-h: calc(var(--float-pad) * 2 + var(--float-bar) + 1px);
+
+  /* Di quanto il foglio bianco della home sale sopra la fotografia.
+     Sta in una variabile perché tre cose devono concordare: l'altezza
+     dell'hero, il margine negativo del foglio e la posizione di «Scorri». Se
+     se ne toccasse una sola, o riapparirebbe una striscia di schede nella
+     prima schermata o il suggerimento finirebbe sotto la piega. */
+  --home-sovrapposizione: 40px;
+}
+.navbar--float {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background 120ms linear, border-color 120ms linear;
+}
+.navbar--float .navbar__inner { padding: var(--float-pad) var(--gutter); min-height: 0; }
+.navbar--float .navbar__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  flex: 1;
+  /* altezza fissata, non dedotta dal contenuto: così i caratteri non possono
+     far crescere la barra e disallineare --float-h */
+  height: var(--float-bar);
+  padding: 0 14px 0 20px; border-radius: 999px;
+  /* La velatura della barra galleggiante, sopra la fotografia della home.
+     Era 0.55. Campionando i pixel veri dell'immagine sotto la barra — 16.960
+     campioni, non una stima a occhio — il punto più chiaro è una zona di cielo
+     bianco, e lì il bianco dei link dava 4,23:1: sotto il 4,5 che serve a
+     15,5 px. Con 0.62 quel punto sale a 5,38, e sul resto della barra la
+     differenza non si vede. È il tipo di guasto che nasce il giorno che
+     qualcuno cambia la fotografia della home: se la nuova ha del cielo dove
+     questa ha degli alberi, va rimisurato. */
+  background: rgba(0, 20, 10, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  transition: background 160ms linear, border-color 160ms linear;
+}
+/* Home, oltre i 40 px di scorrimento: il fondo si chiude, la pastiglia resta. */
+.navbar--float.is-solid {
+  background: rgba(0, 33, 68, 0.92);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+/* Pagine senza foto in cima: fondo pieno da subito, pastiglia identica. */
+.navbar--float.navbar--onsheet {
+  background: var(--navy-800);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 5b. Ricerca in barra ----------------------------------------------- */
+
+.navbar__comandi { display: flex; align-items: center; gap: 10px; }
+
+/* La lente è il punto d'ancoraggio: barra e risultati escono da qui, verso
+   sinistra, e passano sopra le voci di menu — a ricerca aperta non servono.
+   Larghezza in un posto solo: barra ed elenco devono stare incolonnati. */
+.ricerca {
+  position: relative; display: flex;
+  --ricerca-larghezza: min(400px, calc(100vw - var(--gutter) * 2 - 220px));
+}
+
+/* stessa misura e stesso contorno del pulsante del menu, che le sta accanto */
+.nav-search {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; flex: none; padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff; cursor: pointer;
+}
+.nav-search:hover { border-color: var(--yellow); color: var(--yellow); }
+.nav-search svg { display: block; width: 19px; height: 19px; }
+/* aperta: la lente si accende in giallo, così si vede da dove esce la barra */
+.nav-search[aria-expanded="true"] {
+  background: var(--yellow); border-color: var(--yellow); color: var(--navy-800);
+}
+
+/* La barra in cui si scrive: bianca, dentro la pastiglia della navigazione. */
+.ricerca__barra {
+  position: absolute; z-index: 2;
+  top: 50%; right: calc(100% + 10px); transform: translateY(-50%);
+  transform-origin: right center;
+  width: var(--ricerca-larghezza);
+  display: flex; align-items: center; gap: 10px;
+  height: 44px; padding: 0 7px 0 15px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.5); border-radius: 999px;
+  box-shadow: 0 14px 32px rgba(0, 20, 40, 0.32);
+  animation: ricerca-apre 150ms ease-out;
+}
+/* si apre da destra, dalla lente: è lì che si è premuto */
+@keyframes ricerca-apre {
+  from { opacity: 0; transform: translateY(-50%) scaleX(0.86); }
+}
+/* sul telefono la barra non è centrata sulla lente: niente translateY */
+@keyframes ricerca-apre-stretta {
+  from { opacity: 0; transform: scaleX(0.86); }
+}
+
+.ricerca__campo-icona { display: flex; flex: none; color: var(--muted-2); }
+.ricerca__campo-icona svg { width: 17px; height: 17px; }
+
+.ricerca__barra input {
+  flex: 1; min-width: 0; height: 100%;
+  border: 0; background: transparent;
+  font-family: var(--text); font-size: 16px; color: var(--ink);
+}
+.ricerca__barra input::placeholder { color: var(--muted-2); }
+/* L'anello di focus va sulla pastiglia, non sul campo: dentro la barra bianca
+   un rettangolo giallo spezzerebbe la forma. Sono gli stessi tre strati del
+   resto del sito — giallo, blu, verde — solo spostati sul contorno tondo. */
+.ricerca__barra input:focus-visible { outline: none; box-shadow: none; }
+.ricerca__barra:focus-within {
+  outline: 2px solid var(--yellow);
+  box-shadow:
+    0 0 0 4px var(--navy-800),
+    0 0 0 6px var(--green-600),
+    0 14px 32px rgba(0, 20, 40, 0.32);
+}
+
+.ricerca__chiudi {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; flex: none; padding: 0;
+  border: 0; border-radius: 999px;
+  background: var(--bg-alt); color: var(--muted);
+  font-size: 19px; line-height: 1; cursor: pointer;
+}
+.ricerca__chiudi:hover { background: var(--line); color: var(--ink); }
+
+/* I risultati: incolonnati sotto la barra, non sotto la lente. */
+.ricerca__tendina {
+  position: absolute; z-index: 2;
+  top: calc(100% + 10px); right: calc(100% + 10px);
+  width: var(--ricerca-larghezza);
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 22px 44px rgba(0, 24, 47, 0.26);
+}
+
+.ricerca__esiti {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: min(52vh, 420px); overflow-y: auto;
+}
+.ricerca__esito {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 9px 12px; border-radius: 10px;
+  color: var(--ink);
+}
+.ricerca__esito:hover,
+.ricerca__esito.is-scelto { background: var(--bg-alt); color: var(--ink); }
+.ricerca__dove {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--green-600);
+}
+.ricerca__titolo { font-weight: 700; font-size: 16.5px; line-height: 1.3; }
+/* due righe al massimo: la tendina deve restare leggibile a colpo d'occhio */
+.ricerca__testo {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14.5px; line-height: 1.4; color: var(--muted);
+}
+.ricerca__nota { padding: 8px 12px; font-size: 15px; line-height: 1.45; color: var(--body); }
+
+/* --- 6. Foto segnaposto ------------------------------------------------- */
+
+.ph {
+  position: relative; overflow: hidden;
+  background-color: #dcd9d1;
+  background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0.6) 0 12px, rgba(255,255,255,0) 12px 24px);
+}
+.ph--dark {
+  background-color: var(--green-800);
+  background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0.14) 0 12px, rgba(255,255,255,0) 12px 24px);
+}
+.ph--hero {
+  background-image: repeating-linear-gradient(65deg, rgba(255,255,255,0.05) 0 14px, rgba(255,255,255,0) 14px 28px);
+}
+.ph--unit {
+  background-image: repeating-linear-gradient(115deg, rgba(255,255,255,0.08) 0 14px, rgba(255,255,255,0) 14px 28px);
+}
+.ph__tag {
+  position: absolute; left: 12px; bottom: 10px;
+  padding: 4px 8px; border: 1px dashed var(--muted-3);
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  /* Non `var(--muted)`: quel grigio dava 3,58:1 sul giallo della fascia
+     gialla, sotto il 4,5 che WCAG 1.4.3 AA chiede a 10,5 px. Misurato in
+     browser sul fondo vero, non stimato. Questo ne dà 5,09 sul giallo e 7,70
+     sul bianco; la variante `--light`, che sta sui fondi scuri, era gia' a
+     posto (verde 5,16 · rosso 4,85). Il token non si tocca: lo usano decine
+     di altre regole su fondi diversi. */
+  color: #54534f;
+}
+.ph__tag--light {
+  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+.ph__tag--tr { left: auto; right: 14px; top: 14px; bottom: auto; }
+.ph__tag--br { left: auto; right: 18px; bottom: 18px; }
+.ph__tag--tl { top: 12px; bottom: auto; }
+
+/* L'avatar anonimo delle schede dei referenti senza fotografia (`AvatarAnonimo` in
+   components/site/Photo.tsx, e il segnaposto equivalente del generatore).
+
+   Riempie il riquadro come lo riempirebbe la fotografia — `inset: 0` e
+   `slice` sul viewBox — così la scheda non cambia altezza il giorno che il
+   ritratto arriva.
+
+   Il fondo copre il tratteggio di `.ph`: un avatar sopra le righe diagonali
+   sembrerebbe comunque un'immagine non caricata, che è esattamente
+   l'impressione da togliere. Il grigio della sagoma è --muted-3, che è
+   decorazione e non testo: qui il contrasto non è un requisito, perché il
+   nome sta nella riga sotto. */
+.avatar-anonimo {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: var(--bg-alt);
+  fill: var(--muted-3);
+}
+
+/* --- 7. Bottoni e pastiglie --------------------------------------------- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 46px; padding: 0 20px; border-radius: 3px;
+  border: 1.5px solid var(--line-strong); background: var(--surface);
+  font-family: var(--text); font-size: 16px; font-weight: 600;
+  color: var(--navy-600); white-space: nowrap; cursor: pointer;
+}
+.btn:hover { border-color: var(--green-600); color: var(--green-600); }
+
+.btn--ghost { background: transparent; border-color: #d5d0c6; }
+
+.btn--primary {
+  min-height: 48px; border-color: var(--navy-600);
+  background: var(--navy-600); color: #fff; font-weight: 700; font-size: 16.5px;
+}
+.btn--primary:hover { background: var(--navy-800); border-color: var(--navy-800); color: #fff; }
+
+.btn--yellow {
+  min-height: 52px; padding: 0 26px;
+  border-color: var(--yellow); background: var(--yellow);
+  color: var(--navy-800); font-weight: 700; font-size: 17px;
+}
+.btn--yellow:hover { background: #ffd633; border-color: #ffd633; color: var(--navy-800); }
+
+.btn--onnavy {
+  min-height: 52px; padding: 0 24px;
+  border-color: rgba(255, 255, 255, 0.6); background: transparent;
+  color: #fff; font-size: 17px;
+}
+.btn--onnavy:hover { border-color: #fff; background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+.btn--sm { min-height: 44px; padding: 0 16px; font-size: 15.5px; }
+
+.pill {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  min-height: 30px; padding: 0 12px; border-radius: 999px;
+  background: var(--line); color: var(--body);
+  font-size: 13.5px; font-weight: 600; white-space: nowrap;
+}
+.pill--gruppo { background: var(--navy-600); color: #fff; }
+.pill--u1, .pill--u2 { background: var(--yellow); color: var(--navy-800); }
+.pill--u3, .pill--u4 { background: var(--green-600); color: #fff; }
+.pill--u5, .pill--u6 { background: var(--red); color: #fff; }
+
+.hero-chip {
+  display: inline-flex; align-items: center; min-height: 38px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 15.5px; font-weight: 600; color: #fff;
+}
+.hero-chip--solid { border-color: transparent; }
+
+/* --- 8. Barre di filtri ------------------------------------------------- */
+
+/* Altezza della barra dei filtri: i due spazi interni, la pastiglia più alta
+   che contiene e i due bordi. Serve a chi si appiccica sotto di lei
+   (l'intestazione del mese), che altrimenti le finisce sotto. */
+:root { --filterbar-h: calc(16px * 2 + 40px + 2px); }
+
+.filterbar {
+  position: sticky; top: var(--nav-h); z-index: 30;
+  margin-top: 34px;
+  background: rgba(251, 250, 247, 0.94);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.filterbar__inner {
+  display: flex; align-items: center; gap: 22px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 16px var(--gutter);
+}
+.filterbar__label {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted-2); white-space: nowrap;
+}
+.filterbar__count {
+  margin-left: auto;
+  font-family: var(--mono); font-size: 12.5px;
+  color: var(--muted-2); white-space: nowrap;
+}
+.filterbar__group { display: flex; align-items: center; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px;
+  border: 1px solid var(--line-strong); border-radius: 999px;
+  background: var(--surface); color: var(--ink);
+  font-family: var(--text); font-size: 15px; font-weight: 600;
+  white-space: nowrap; cursor: pointer;
+}
+.chip:hover { border-color: var(--muted-3); }
+.chip[aria-pressed="true"] { background: var(--navy-800); border-color: var(--navy-800); color: #fff; }
+.chip[aria-pressed="true"][data-tone="gruppo"] { background: var(--navy-600); border-color: var(--navy-600); }
+.chip[aria-pressed="true"][data-tone="gialla"] { background: var(--yellow); border-color: var(--yellow); color: var(--navy-800); }
+.chip[aria-pressed="true"][data-tone="verde"] { background: var(--green-600); border-color: var(--green-600); }
+.chip[aria-pressed="true"][data-tone="rossa"] { background: var(--red); border-color: var(--red); }
+.chip[aria-pressed="true"][data-tone="corrente"] { background: var(--green-600); border-color: var(--green-600); }
+
+/* --- 9. Schede ---------------------------------------------------------- */
+
+.card {
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.card__body { display: flex; flex-direction: column; gap: 12px; padding: 24px; }
+.card--pad { padding: 22px 24px; gap: 8px; border-radius: 10px; }
+.card--navy { background: var(--navy-600); border-color: var(--navy-600); color: #fff; }
+.card--navy .card__title, .card--navy h3 { color: #fff; }
+
+/* La scheda del gestore: il filo arancione in cima è il suo colore.
+   Sul filo l'arancione sta pieno, perché lì è una superficie e non del testo;
+   sul ruolo scritto sotto passa alla versione scura, che sul bianco si legge. */
+.card--gestore { border-top: 3px solid var(--orange); }
+.card--gestore .staff__role { color: var(--orange-ink); font-weight: 600; }
+
+/* La scheda di un referente: il filo in cima e' il colore della sua fascia.
+   Il colore lo mette la pagina, in linea, perche' dipende dall'unita' e non
+   dalla classe: qui c'e' solo lo spessore, e il grigio come ripiego, cosi' una
+   scheda che arrivasse senza colore resta una scheda e non un bordo rotto.
+   Sulle schede di gruppo — gestori e altre figure — la fascia e'
+   «tutto il gruppo», e il filo e' il navy. */
+.card--referente { border-top: 3px solid var(--line); }
+
+/* elenco a righe con separatori sottili (griglia 1px) */
+.rows {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--line); border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.rows__row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 20px; background: var(--surface);
+}
+.rows__key {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+/* la chiave con l'icona del servizio davanti (righe social dei Contatti) */
+.rows__key--icona { display: inline-flex; align-items: center; gap: 8px; }
+.rows__key--icona svg { flex: none; color: var(--ink); }
+/* La guardia sta sulla **riga** e non sul solo `.rows__val`, di proposito: il
+   valore di una riga non sempre porta quella classe. Nella pagina Contatti è un
+   `<a>` nudo, altrove è una frase che contiene un indirizzo di posta in mezzo.
+   Quello che hanno in comune è che possono contenere una parola sola che non va
+   a capo — un indirizzo — e senza permesso di spezzarsi esce dal riquadro: 127
+   px oltre il bordo bianco, a 400 px di schermo.
+   `text-align: right` invece riguarda solo il valore, perché è quello che nel
+   formato largo sta a destra e le sue righe devono restare incolonnate;
+   impilato (§ ≤780 px) torna a sinistra. */
+.rows__row > * { min-width: 0; overflow-wrap: anywhere; }
+.rows__val {
+  font-size: 16.5px; font-weight: 600; color: var(--ink);
+  text-align: right;
+}
+
+.grid { display: grid; gap: 22px; }
+.grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.grid--hair {
+  gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+}
+.grid--hair > * { background: var(--surface); }
+
+.section-rule {
+  display: flex; align-items: center; gap: 16px;
+}
+.section-rule__line { flex: 1; height: 1px; background: var(--line); }
+.section-rule__year {
+  font-family: var(--display); font-weight: 800; font-size: 26px;
+  letter-spacing: -0.02em; color: var(--ink);
+}
+.section-rule__count { font-family: var(--mono); font-size: 12px; color: var(--muted-2); }
+
+/* --- 10. Home ----------------------------------------------------------- */
+
+.home-hero {
+  position: relative;
+  /* Tutta la schermata: aprendo il sito si vede la fotografia e basta.
+     Il `+ sovrapposizione` è la parte che il foglio bianco ricopre, così il
+     suo bordo arrotondato cade esattamente sulla piega invece di lasciar
+     vedere le schede che stanno sotto. */
+  height: calc(100svh + var(--home-sovrapposizione));
+  margin-top: calc(var(--float-h) * -1);   /* la foto passa sotto la barra */
+}
+.home-hero__media {
+  position: sticky; top: 0; overflow: hidden;
+  height: calc(100svh + var(--home-sovrapposizione));
+  background-color: var(--green-800);
+}
+/* La fotografia riempie l'hero. `object-position` verticale al 30%: l'hero è
+   molto più largo che alto, quindi il ritaglio mangia sopra e sotto, e senza
+   spostarlo le aste delle bandiere restavano decapitate. Al 30% le bandiere
+   stanno dentro e il gruppo cade poco sotto la metà, dove la velatura qui
+   sotto è più chiara. Sul telefono il riquadro è verticale, il ritaglio avviene
+   ai lati e questo valore non ha effetto: si vede il portale centrale. */
+.home-hero__foto {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center 30%;
+}
+
+.home-hero__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,26,13,0.78) 0%, rgba(0,26,13,0.28) 40%, rgba(0,26,13,0.8) 100%);
+}
+.home-hero__text {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; gap: 22px;
+  max-width: 900px;
+  padding: 0 var(--gutter) 56px;
+  will-change: opacity, transform;
+}
+.home-hero__title {
+  font-size: 76px; font-weight: 800; line-height: 0.98;
+  letter-spacing: -0.03em; color: #fff; text-wrap: balance;
+}
+.home-hero__lead {
+  max-width: 620px; font-size: 20px; line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85); text-wrap: pretty;
+}
+.home-hero__hint {
+  /* A destra e non al centro: il titolo è allineato a sinistra e su schermi
+     larghi arriva fin oltre la metà, dove il suggerimento gli finiva addosso.
+     Misurato dalla piega e non dal fondo dell'hero, che adesso le sta sotto. */
+  position: absolute; right: var(--gutter);
+  bottom: calc(var(--home-sovrapposizione) + 18px);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.home-hero__hint span:first-child {
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+.home-hero__hint i {
+  width: 1px; height: 34px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0));
+}
+.home-sheet {
+  position: relative; z-index: 3;
+  margin-top: calc(var(--home-sovrapposizione) * -1);
+  padding: 56px 0 64px;
+  background: var(--bg);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -20px 50px -20px rgba(0, 26, 13, 0.45);
+}
+
+.counters {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 14px; overflow: hidden;
+}
+.counters__cell {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 34px 28px; background: var(--navy-600);
+}
+.counters__cell--alt { background: var(--navy-800); }
+.counters__value {
+  font-family: var(--display); font-weight: 800; font-size: 56px; line-height: 1;
+  letter-spacing: -0.03em; color: var(--yellow); font-variant-numeric: tabular-nums;
+}
+.counters__cell--alt .counters__value { color: #fff; }
+.counters__label { font-size: 17px; font-weight: 600; color: #fff; }
+.counters__sub {
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.quote {
+  border-left: 3px solid var(--yellow);
+  padding-left: 24px; margin-top: 46px;
+}
+.quote p {
+  font-family: var(--display); font-weight: 700; font-size: 26px;
+  line-height: 1.25; color: var(--ink); text-wrap: pretty;
+}
+/* L'attribuzione della citazione. Era `#7e8798`, ed era sbagliata due volte.
+   Di contrasto: 3,47:1 sul fondo su cui sta, sotto il 4,5 che una scritta da
+   12 px deve fare — l'ultimo letterale rimasto fuori dalla passata che ha
+   portato le note e i conteggi su `--muted-2` (§ la nota del token).
+   E di tinta: era l'unico grigio **bluastro** del foglio, in mezzo a grigi
+   caldi. Con `--muted-2` fa 5,16 e sta nella tavolozza. */
+.quote cite {
+  display: block; padding-top: 12px; font-style: normal;
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2);
+}
+
+.branch-card__media { height: 190px; }
+.branch-card__dot { width: 12px; height: 12px; border-radius: 50%; }
+.branch-card__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line-soft);
+  font-size: 16.5px; font-weight: 600; color: var(--ink);
+}
+.branch-card__foot a { font-size: 22px; font-weight: 700; }
+
+.steps__num {
+  font-family: var(--mono); font-size: 12px;
+  /* era #b3aca0: 2,25:1 sul bianco, meno della metà di quello che serve. I
+     numeri «01…04» sembrano decorativi ma portano l'ordine dei passi, e a
+     12 px la soglia è 4,5. Questo dà 4,80. */
+  letter-spacing: 0.14em; color: #767268;
+}
+.steps__cell { display: flex; flex-direction: column; gap: 10px; padding: 28px 30px; }
+.steps__cell h3 { font-size: 22px; }
+
+.promo { display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; }
+.promo--navy { background: var(--navy-800); color: #fff; }
+.promo--navy h3 { color: #fff; }
+.promo--blue { background: var(--navy-600); color: #fff; padding: 26px; gap: 18px; justify-content: space-between; }
+.promo--blue h3 { color: #fff; }
+.promo--white {
+  background: var(--surface); border: 1px solid var(--line);
+  padding: 26px; gap: 18px; justify-content: space-between; color: var(--ink);
+}
+.promo--white:hover { border-color: var(--green-600); }
+
+/* --- 11. Intestazioni di pagina con foto -------------------------------- */
+
+.page-hero { position: relative; height: 420px; background-color: var(--green-800); }
+.page-hero--unit { height: 520px; }
+.page-hero__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,26,13,0.65) 0%, rgba(0,26,13,0.35) 45%, rgba(0,26,13,0.85) 100%);
+}
+.page-hero--unit .page-hero__scrim {
+  background: linear-gradient(180deg, rgba(0,20,10,0.62) 0%, rgba(0,20,10,0.52) 40%, rgba(0,20,10,0.9) 100%);
+}
+/* La fotografia di copertina di un'unita', quando un gestore l'ha caricata.
+   Sta sotto lo scrim (che nel markup viene dopo) e sopra il colore di fascia:
+   il colore si vede finche' l'immagine non e' arrivata e ai lati se la
+   proporzione non combacia, e lo scrim tiene leggibile il titolo bianco sopra
+   qualunque fotografia. Senza lo scrim, una foto chiara renderebbe illeggibile
+   il nome dell'unita'. */
+/* Le tre fotografie che riempiono un riquadro del disegno: la copertina di
+   un'unità, quella di un album in evidenza, e le diciotto dei posti fissi
+   (`ImmagineSlot`). Stessa regola perché è lo stesso problema — coprire il
+   riquadro senza deformarsi, con il colore sotto che si vede ai lati e finché
+   l'immagine non è arrivata. */
+.page-hero__foto,
+.album-hero__foto,
+.slot__foto {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+}
+.page-hero__body {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; gap: 16px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 0 var(--gutter) 46px;
+}
+.page-hero__title {
+  font-size: 62px; font-weight: 800; line-height: 1.02;
+  letter-spacing: -0.03em; color: #fff; text-wrap: balance;
+  max-width: 900px;
+}
+.page-hero--unit .page-hero__title { font-size: 60px; line-height: 1; }
+
+.unit-head { display: flex; align-items: center; gap: 20px; }
+.unit-head img { width: 84px; height: 84px; flex: none; display: block; }
+.unit-head__kicker {
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* --- 12. Le Unità: organigramma ----------------------------------------- */
+
+/* Una scala da salire: in fondo la fascia gialla, da cui si parte, poi la verde,
+   la rossa, e in cima i referenti. Una linea a sinistra lega i gradini con un
+   pallino nel colore di ogni fascia, e in cima una punta verso l'alto. Tutto sta
+   in un'unica griglia allineata al titolo: le righe hanno la stessa altezza e le
+   colonne delle unità cadono in fila. */
+.org {
+  --org-indent: 52px;  /* spazio a sinistra per la linea */
+  --org-spine: 16px;   /* asse della linea */
+  --org-gap: 16px;
+}
+.org__levels {
+  display: grid; grid-template-columns: 260px repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr; gap: var(--org-gap) 16px;
+  width: 100%; padding-left: var(--org-indent);
+}
+.org__level, .org__row { display: contents; }
+.org__group {
+  display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  padding: 18px 22px; border-radius: 14px;
+}
+.org__tappa { position: relative; }
+/* il tratto di linea tra un gradino e l'altro, e il rametto verso la scheda */
+.org__tappa::before,
+.org__tappa::after {
+  content: ""; position: absolute; background: var(--rule);
+  left: calc(var(--org-spine) - var(--org-indent));
+}
+.org__tappa::before { top: calc(-1 * var(--org-gap)); bottom: 0; width: 3px; margin-left: -1.5px; }
+.org__top.org__tappa::before { top: 50%; }
+.org__level:last-child .org__tappa::before { bottom: 50%; }
+.org__tappa::after { top: calc(50% - 1.5px); width: calc(var(--org-indent) - var(--org-spine)); height: 3px; }
+.org__step {
+  position: absolute; z-index: 1; top: 50%;
+  left: calc(var(--org-spine) - var(--org-indent));
+  width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--bg);
+}
+/* in cima, al posto del pallino, la punta: si sale */
+.org__top .org__step {
+  width: 20px; height: 17px; margin: -11px 0 0 -10px; border-radius: 0;
+  background: var(--navy-800); box-shadow: none;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.org__group strong { font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.2; }
+.org__group span { font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; }
+
+.org__top {
+  grid-column: 1 / -1; justify-self: start;
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 26px 14px 16px; border-radius: 14px;
+  background: var(--navy-800); color: #fff;
+}
+.org__top:hover { color: #fff; }
+.org__top img { height: 52px; width: auto; display: block; }
+.org__top strong { font-family: var(--display); font-weight: 700; font-size: 22px; line-height: 1.2; }
+.org__top > span > span {
+  font-family: var(--mono); font-size: 13px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6);
+}
+
+.unit-link {
+  display: flex; align-items: center; gap: 18px;
+  padding: 16px 22px 16px 18px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 6px solid var(--line); border-radius: 14px;
+  color: var(--ink);
+}
+.unit-link:hover { color: var(--ink); }
+.unit-link img { width: 64px; height: 64px; flex: none; display: block; }
+.unit-link strong { font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 1.25; }
+.unit-link > span > span { font-size: 15.5px; color: var(--muted); }
+.unit-link__chev { font-size: 26px; color: var(--muted-2); }
+
+/* --- 13. Pagina unità ---------------------------------------------------- */
+
+.people-card__media { height: 210px; }
+.people-card__body { display: flex; flex-direction: column; gap: 5px; padding: 18px 20px; }
+.people-card__name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink); }
+.people-card__role { font-size: 15.5px; color: var(--body); }
+.people-card__since { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; }
+
+.contact-card {
+  display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  padding: 24px; border-radius: 12px;
+}
+.contact-card strong { font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.2; }
+.contact-card span {
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+.history {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--line); border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.history__row {
+  display: grid; grid-template-columns: 160px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px; padding: 16px 22px; background: var(--surface);
+}
+.history__row--head { padding: 14px 22px; background: var(--bg-alt); }
+.history__row--head span {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.history__years { font-family: var(--mono); font-size: 15px; color: var(--ink); }
+.history__name { font-size: 16.5px; font-weight: 600; color: var(--ink); }
+.history__note { font-size: 16.5px; color: var(--body); }
+
+.unit-switch {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 28px var(--gutter);
+}
+.unit-switch__list { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.unit-tab {
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 46px; padding: 0 16px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: 15.5px; font-weight: 600; color: var(--ink);
+}
+.unit-tab:hover { color: var(--ink); }
+.unit-tab img { width: 26px; height: 26px; display: block; }
+.unit-tab[aria-current="page"] { border-color: var(--ink); }
+
+/* --- 14. Calendario ------------------------------------------------------ */
+
+.month { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; align-items: start; }
+.month__head { position: sticky; top: calc(var(--nav-h) + var(--filterbar-h)); display: flex; flex-direction: column; gap: 6px; }
+.month__name {
+  font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1;
+  letter-spacing: -0.02em; color: var(--ink);
+}
+.month__year { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--muted-2); }
+.month__rule { width: 46px; height: 3px; margin-top: 6px; background: var(--yellow); }
+.month__list { display: flex; flex-direction: column; gap: 12px; }
+
+.event {
+  display: flex; align-items: flex-start; gap: 20px;
+  padding: 20px 22px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 4px solid var(--line); border-radius: 12px;
+}
+.event__date {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  flex: none; width: 62px; height: 62px;
+  background: var(--bg-alt); border-radius: 10px;
+}
+.event__day { font-family: var(--display); font-weight: 800; font-size: 22px; line-height: 1; color: var(--ink); }
+.event__dow {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+.event__main { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+.event__title {
+  font-family: var(--display); font-weight: 700; font-size: 20px;
+  letter-spacing: -0.01em; color: var(--ink);
+}
+.event__kind {
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-2);
+}
+.event__note { font-size: 16.5px; line-height: 1.5; color: var(--body); text-wrap: pretty; }
+.event__tags { display: flex; flex-wrap: wrap; gap: 7px; padding-top: 2px; }
+.event__side {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 150px;
+}
+.event__place { font-family: var(--mono); font-size: 12.5px; color: var(--muted); text-align: right; }
+.event__dur { font-size: 15px; font-weight: 600; color: var(--navy-600); }
+
+/* --- 15. Foto ------------------------------------------------------------ */
+
+.album-hero {
+  position: relative; display: block; height: 400px;
+  border-radius: 14px; overflow: hidden; color: #fff;
+}
+.album-hero:hover { color: #fff; }
+.album-hero__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,26,13,0.15) 0%, rgba(0,26,13,0.82) 100%);
+}
+.album-hero__body {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
+  padding: 0 30px 28px;
+}
+.album-hero__title {
+  font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1.06;
+  letter-spacing: -0.03em; color: #fff; text-wrap: balance;
+}
+.album-hero__meta { font-size: 17px; color: rgba(255, 255, 255, 0.82); }
+
+.album { color: var(--ink); }
+.album:hover { color: var(--ink); }
+.album__cover { position: relative; display: block; height: 210px; }
+.album__badge { position: absolute; left: 12px; bottom: 12px; min-height: 28px; padding: 0 11px; font-size: 13px; }
+.album__body { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 20px; }
+.album__title { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.2; text-wrap: pretty; }
+.album__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.album__date { font-size: 15.5px; color: var(--muted); }
+.album__count { font-family: var(--mono); font-size: 12.5px; color: var(--muted-2); }
+
+/* --- 16. Documenti ------------------------------------------------------- */
+
+.doclist {
+  display: flex; flex-direction: column; gap: 1px;
+  background: var(--line); border: 1px solid var(--line);
+  border-radius: 12px; overflow: hidden;
+}
+.doc { display: flex; align-items: center; gap: 20px; padding: 16px 22px; background: var(--surface); }
+.doc__icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: none; width: 46px; height: 52px; border-radius: 6px;
+  background: var(--red); color: #fff;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+}
+.doc__icon--docx { background: var(--navy-600); }
+.doc__main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.doc__title { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink); }
+.doc__note { font-size: 16px; line-height: 1.5; color: var(--body); text-wrap: pretty; }
+/* L'avviso di un documento: lo stesso giallo di .warnbox, in piccolo, dentro la
+   colonna del titolo. */
+.doc__avviso {
+  display: block; margin-top: 6px; padding: 10px 14px;
+  background: #fff9e0; border: 1px solid var(--line);
+  border-left: 4px solid var(--yellow); border-radius: 8px;
+  font-size: 15.5px; line-height: 1.5; color: var(--body); text-wrap: pretty;
+}
+.doc__avviso strong { color: var(--ink); }
+.doc__meta {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  min-width: 130px; font-family: var(--mono);
+}
+.doc__updated { font-size: 12.5px; color: var(--muted); }
+.doc__size { font-size: 12px; color: var(--muted-2); }
+.doc__actions { display: flex; align-items: center; gap: 8px; }
+
+.year-badge {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  min-height: 28px; padding: 0 12px; border-radius: 999px;
+  background: var(--line); color: var(--body);
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.year-badge--current { background: var(--green-600); color: #fff; }
+
+.archive-link {
+  display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; text-align: left; color: var(--ink);
+}
+.archive-link:hover { border-color: var(--green-600); color: var(--ink); }
+.archive-link strong { font-family: var(--display); font-weight: 700; font-size: 18px; }
+.archive-link em { font-style: normal; font-size: 15.5px; color: var(--muted); }
+.archive-link .count { font-family: var(--mono); font-size: 12.5px; color: var(--muted-2); }
+.archive-link .chev { font-size: 19px; color: var(--muted-2); }
+
+.empty {
+  display: flex; flex-direction: column; gap: 8px; padding: 34px;
+  background: var(--surface); border: 1px dashed var(--line-strong); border-radius: 12px;
+}
+.empty strong { font-family: var(--display); font-weight: 700; font-size: 20px; color: var(--ink); }
+
+/* Le cartelle della pagina Documenti. È la scheda bianca che in Home porta a
+   questa pagina (`promo--white`), con il conteggio in cima e «Apri» in fondo:
+   lo stesso oggetto, perché fa la stessa cosa — si tocca e si entra. */
+/* Documenti: ogni cartella è una tendina che si apre sul posto */
+.tendine { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.tendina { border-bottom: 1px solid var(--line); scroll-margin-top: 90px; }
+.tendina__testa {
+  display: flex; align-items: center; gap: 14px; padding: 22px 4px;
+  cursor: pointer; list-style: none;
+}
+.tendina__testa::-webkit-details-marker { display: none; }
+.tendina__titolo { font-size: 22px; flex: 1; text-wrap: balance; }
+.tendina__conta { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.tendina__freccia { font-size: 18px; transition: transform .15s ease; }
+.tendina[open] .tendina__freccia { transform: rotate(180deg); }
+.tendina__testa:hover .tendina__titolo { color: var(--green-600); }
+.tendina__corpo { padding: 4px 0 30px; }
+
+/* Di quale unità è una circolare: sopra il titolo, piccola, come l'unità di un
+   referente nella pagina Contatti. --muted-2 e non --muted-3: è testo. */
+.doc__ambito {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2);
+}
+
+/* --- 17. Contatti -------------------------------------------------------- */
+
+.leader {
+  display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 4px solid var(--line); border-radius: 12px;
+}
+.leader img { width: 52px; height: 52px; flex: none; display: block; }
+.leader__main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.leader__unit { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.leader__name { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--ink); }
+.leader__role { font-size: 15.5px; color: var(--muted); }
+/* `min-width: 0` e `overflow-wrap`, e servono tutti e due.
+   In questa scheda a destra c'è un indirizzo di posta, cioè una parola sola che
+   non va a capo. Senza `min-width: 0` la colonna dei recapiti cresce fino a
+   contenerla tutta e schiaccia quella di sinistra — che `min-width: 0` ce l'ha,
+   e quindi si stringe fino a mandare l'etichetta dell'unità a **una parola per
+   riga**: «UNITÀ / «LA / NUOVA / TRACCIA»». Con solo `min-width: 0` la colonna
+   si stringe ma l'indirizzo esce lo stesso, perché resta una parola sola: gli
+   serve il permesso di spezzarsi.
+   Provato con `segreteria.iscrizioni.anno.sociale@nome-di-un-gruppo-molto-lungo.example.org`,
+   che è lungo ma non assurdo per una segreteria. */
+.leader__contacts {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  min-width: 0; max-width: 50%;
+}
+.leader__tel { font-size: 16.5px; font-weight: 700; color: var(--navy-600); }
+.leader__mail { font-size: 15.5px; color: var(--body); overflow-wrap: anywhere; text-align: right; }
+.leader__mail:hover { color: var(--green-600); }
+
+.faq {
+  padding: 20px 22px; background: var(--surface);
+  border: 1px solid var(--line); border-left: 4px solid var(--line);
+  border-radius: 12px;
+}
+.faq summary {
+  font-family: var(--display); font-weight: 700; font-size: 20px; line-height: 1.25;
+  color: var(--ink); cursor: pointer; text-wrap: pretty;
+}
+.faq p { margin-top: 12px; font-size: 17px; line-height: 1.65; color: var(--body); text-wrap: pretty; }
+
+.form-panel {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 30px; background: var(--surface); border-radius: 14px;
+}
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field > span { font-size: 15px; font-weight: 600; color: var(--ink); }
+.field > span em { font-style: normal; font-weight: 400; color: var(--muted-2); }
+.field input, .field select, .field textarea {
+  min-height: 48px; padding: 0 14px;
+  border: 1.5px solid var(--line-strong); border-radius: 3px;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--text); font-size: 16.5px;
+}
+.field textarea { padding: 12px 14px; line-height: 1.5; resize: vertical; }
+.field input[aria-invalid="true"], .field textarea[aria-invalid="true"] { border-color: var(--red); }
+
+/* La password di un album, con «Mostra» accanto. È uno `span` figlio diretto
+   di `.field`, quindi eredita il peso dell'etichetta: qui si rimette quello del
+   testo, e il campo prende tutto lo spazio che il pulsante lascia. */
+.field > .campo-password { display: flex; gap: 8px; font-weight: 400; }
+.campo-password input { flex: 1 1 auto; min-width: 0; }
+.campo-password__mostra {
+  min-height: 48px; padding: 0 16px;
+  border: 1.5px solid var(--line-strong); border-radius: 3px;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--text); font-size: 15px; font-weight: 600;
+  cursor: pointer;
+}
+
+.consent { display: flex; align-items: flex-start; gap: 10px; }
+.consent input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--green-600); }
+.consent span { font-size: 15px; line-height: 1.5; color: var(--body); }
+
+.submit-row { display: flex; align-items: center; gap: 16px; padding-top: 4px; flex-wrap: wrap; }
+.btn-submit {
+  display: inline-flex; align-items: center; min-height: 52px; padding: 0 24px;
+  border: none; border-radius: 3px;
+  /* Il bianco su questo grigio dava 1,74:1. Non è un controllo disabilitato —
+     senza JavaScript resta così e **funziona**, perché la validazione vera è
+     sul server — quindi l'esenzione per i controlli inattivi non si applica e
+     l'etichetta dev'essere leggibile. Inchiostro scuro: 6,24:1, e l'aria di
+     «non ancora pronto» resta nel fondo. */
+  background: #c9c4ba; color: #3f3d38;
+  font-family: var(--text); font-size: 17px; font-weight: 700;
+  cursor: not-allowed;
+}
+/* il bianco va ridetto qui: l’inchiostro scuro del grigio qui sopra, sul verde,
+   dava 1,9:1. Bianco su --green-600: 7,4:1 */
+.btn-submit.is-ready { background: var(--green-600); color: #fff; cursor: pointer; }
+.form-hint { font-size: 15px; line-height: 1.45; color: var(--muted-2); }
+.form-hint.is-error { color: var(--red); }
+
+.form-sent {
+  display: flex; flex-direction: column; gap: 10px; padding: 22px;
+  background: #e8f2ec; border: 1px solid #7fae95; border-radius: 12px;
+}
+.form-sent strong { font-family: var(--display); font-weight: 700; font-size: 21px; color: var(--green-800); }
+.form-sent p { font-size: 16.5px; line-height: 1.55; color: #22462f; }
+.form-sent button {
+  align-self: flex-start; min-height: 44px; margin-top: 4px; padding: 0 18px;
+  border: 1.5px solid #7fae95; border-radius: 3px; background: #fff;
+  font-family: var(--text); font-size: 15.5px; font-weight: 600;
+  color: var(--green-800); cursor: pointer;
+}
+
+.map {
+  position: relative; height: 340px; border-radius: 14px; overflow: hidden;
+  /* un fondo sotto la mappa: mentre l'iframe carica, il riquadro non è bianco */
+  background: var(--surface-2, #eceae4);
+}
+/* La mappa riempie il riquadro. È un'immagine e non un riquadro di Google:
+   vedi il commento in app/(sito)/contatti/page.tsx. */
+.map__foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.map .btn { position: absolute; left: 16px; bottom: 16px; }
+
+/* --- 18. Piede ----------------------------------------------------------- */
+
+.footer { background: var(--navy-900); color: rgba(255, 255, 255, 0.72); padding: 56px 0 0; }
+.footer__top {
+  display: grid; grid-template-columns: 1.25fr 0.9fr 0.95fr 0.95fr 1.05fr; gap: 34px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 0 var(--gutter) 40px;
+}
+.footer__brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.footer__brand img { height: 52px; width: auto; display: block; flex-shrink: 0; }
+.footer__brand > span { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.footer__brand strong {
+  display: block; font-family: var(--display); font-weight: 700;
+  font-size: 19px; line-height: 1.25; color: #fff;
+}
+.footer__brand > span > span {
+  display: block; margin-top: 4px;
+  font-family: var(--mono); font-size: 10.5px; line-height: 1.2;
+  letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6);
+}
+.footer__about { font-size: 15.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.6); text-wrap: pretty; }
+.footer__col { display: flex; flex-direction: column; gap: 12px; }
+.footer__title {
+  font-family: var(--mono); font-size: 11.5px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--yellow);
+}
+.footer__col a, .footer__col span:not(.footer__title) { font-size: 16px; color: rgba(255, 255, 255, 0.78); line-height: 1.55; }
+.footer__col a:hover { color: #fff; }
+.footer__social { display: flex; align-items: center; gap: 10px; padding-top: 4px; }
+.footer__social a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px; border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.8);
+}
+.footer__social a:hover { border-color: var(--yellow); color: var(--yellow); }
+
+.footer__legal {
+  display: flex; flex-direction: column; gap: 14px;
+  max-width: var(--page); margin: 0 auto;
+  padding: 26px var(--gutter);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.footer__links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.footer__links a { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, 0.82); }
+.footer__links a:hover { color: var(--yellow); }
+.footer__gdpr {
+  max-width: 940px; font-size: 14.5px; line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5); text-wrap: pretty;
+}
+.footer__meta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px 24px; padding: 14px 0 26px;
+  /* era 0.45: 4,25:1 sul navy, appena sotto la soglia. 0.62 dà 6,88 */
+  font-size: 14.5px; color: rgba(255, 255, 255, 0.62);
+}
+
+/* --- 19. Adattamento ai formati piccoli ---------------------------------- */
+
+/* Tablet orizzontale */
+/* La barra estesa sta in riga fin dove ci sta, e non un pixel oltre.
+   Le misure sono vere, prese a caratteri caricati: marchio 363 px, menu 524,
+   comandi 183, più 64 di spazi e 34 di imbottitura della pastiglia — 1168 px
+   di barra, cioè 1264 px di finestra con le grondaie da 48. Sopra i 1280 ci
+   sta; sotto no, e quello che accadeva prima è che il marchio andava a capo:
+   «Label –» sopra «Nome del patrono», e con `line-height: 1` la
+   seconda riga finiva addosso al sottotitolo. Ora invece, in ordine:
+
+    - fino a 1280 px si stringe quello che si può stringere senza che si veda
+      (§ qui sotto): gli spazi sono un MINIMO, e con `space-between` a schermo
+      largo la barra resta distanziata come prima;
+    - sotto i 1200 px il menu passa nella tendina del pulsante (§ più sotto).
+      Lente e «Area riservata» restano in barra: senza le sette voci di menu
+      c'è spazio da vendere fino al telefono. */
+/* Tablet e portatili stretti: la barra completa richiede circa 1290 px per
+   non toccare il marchio e i comandi. Sotto i 1280 px il menu passa quindi
+   nella tendina del pulsante a scomparsa, lasciando pieno respiro al marchio. */
+@media (max-width: 1280px) {
+  .nav-toggle { display: flex; flex-direction: column; }
+
+  .nav {
+    display: none;
+    position: absolute; left: 0; right: 0; top: 100%;
+    flex-direction: column; align-items: stretch; gap: 2px;
+    padding: 10px var(--gutter) 16px;
+    background: var(--navy-800);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .nav.is-open { display: flex; }
+  .nav a { min-height: 48px; display: flex; align-items: center; border-radius: 8px; font-size: 17px; }
+
+  .navbar__inner, .navbar--float .navbar__bar { gap: 16px; }
+
+  /* Con il menu nella tendina, a sinistra della lente la barra di ricerca
+     può espandersi senza sovrapporsi al marchio. */
+  .ricerca {
+    --ricerca-comandi: 290px;
+    --ricerca-larghezza: calc(100vw - var(--gutter) * 2 - var(--ricerca-comandi));
+  }
+}
+
+/* Tablet verticale o schermi medi: «Area riservata» entra nella tendina
+   per non comprimere il marchio a larghezze intermedie. */
+@media (max-width: 960px) {
+  .btn-reserved--bar { display: none; }
+  .nav .btn-reserved {
+    display: flex; justify-content: center;
+    margin-top: 8px; border-radius: 8px;
+  }
+  .ricerca {
+    --ricerca-comandi: 130px;
+  }
+}
+
+@media (max-width: 1180px) {
+  :root { --gutter: 32px; }
+  .footer__top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-hero__title { font-size: 60px; }
+  .page-hero__title { font-size: 50px; }
+  .page-hero--unit .page-hero__title { font-size: 46px; }
+}
+
+/* Tablet verticale: le griglie larghe si dimezzano */
+@media (max-width: 1000px) {
+  .grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .counters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .split { grid-template-columns: minmax(0, 1fr) !important; gap: 32px !important; }
+  .split > * { padding-top: 0 !important; margin-top: 0 !important; }
+  .quote { margin-top: 0; }
+  /* la fascia a sinistra, le sue unità una sotto l'altra */
+  .org__levels { grid-template-columns: 220px minmax(0, 1fr); grid-auto-rows: auto; }
+  .org__group { grid-row: span 2; }
+  .month { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .month__head { position: static; flex-direction: row; align-items: baseline; gap: 10px; }
+  .month__rule { display: none; }
+}
+
+/* Telefono: layout a colonna singola, secondo le regole del mockup mobile */
+@media (max-width: 780px) {
+  /* organigramma in colonna: la fascia fa da titolo alle sue unità */
+  .org { --org-gap: 10px; --org-indent: 32px; --org-spine: 9px; }
+  .unit-link { padding: 12px 16px 12px 14px; gap: 14px; }
+  .unit-link img { width: 52px; height: 52px; }
+  .org__group { padding: 14px 18px; }
+  .org__top { padding: 12px 18px 12px 14px; gap: 12px; }
+  .org__top img { height: 40px; }
+  .org__top > span > span { font-size: 11px; letter-spacing: 0.06em; }
+  .org__levels { grid-template-columns: minmax(0, 1fr); }
+  .org__group { grid-row: auto; }
+  .org__top { justify-self: stretch; }
+  /* in colonna la linea scende lungo tutta la fascia, unità comprese: il tratto
+     tra una fascia e l'altra lo disegnano le unità, che sono in mezzo; sotto
+     l'ultima fascia la scala è finita */
+  .unit-link { position: relative; }
+  .unit-link::before {
+    content: ""; position: absolute; width: 3px; background: var(--rule);
+    left: calc(var(--org-spine) - var(--org-indent) - 6px - 1.5px);
+    top: calc(-1 * var(--org-gap) - 1px); bottom: -1px;
+  }
+  .org__level:last-child .unit-link::before { display: none; }
+  .org__level .org__group { margin-top: 12px; }
+  .org__level .org__tappa::before { top: calc(-1 * var(--org-gap) - 12px); }
+  /* --nav-h e --float-h si ricalcolano da soli da questi due valori.
+     La barra è 56 e non 48 perché il marchio qui sta su due righe più
+     sottotitolo con interlinea corretta che non si sovrappone. */
+  :root { --gutter: 18px; --float-pad: 9px; --float-bar: 56px; }
+
+  body { font-size: 16.5px; }
+
+  .navbar__inner { min-height: 64px; padding: 9px var(--gutter); gap: 12px; }
+  /* `flex-shrink: 1` rimette quello che la regola di base (§ .brand) toglie
+     con `flex-shrink: 0`. Lì serve: finché le sette voci di menu stanno in
+     barra, il marchio non deve farsi stringere da loro. Qui no — qui il menu è
+     nella tendina e il marchio *deve* potersi stringere, perché è proprio
+     questo il blocco che lo manda a capo su due righe (§ .brand__name qui
+     sotto, con `white-space: normal` e `line-clamp: 2`). Con lo zero quel referente
+     non arrivava mai: a 390 px il nome restava su una riga da 263 px e in una
+     barra da 354, fra lente e pulsante, il pulsante del menu finiva 22,5 px
+     oltre il bordo della barra e mezzo pixel fuori dallo schermo. */
+  .brand { min-width: 0; gap: 10px; flex-shrink: 1; }
+  .brand img { height: 32px; width: auto; flex-shrink: 0; }
+  .brand > span { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+  .brand__name {
+    font-size: 14px;
+    white-space: normal; line-height: 1.18;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .brand__sub {
+    font-size: 9px; line-height: 1.2;
+    margin-top: 2px;
+    letter-spacing: 0.1em;
+    overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-reserved--bar { display: none; }
+  .nav .btn-reserved {
+    display: flex; justify-content: center;
+    margin-top: 8px; border-radius: 8px;
+  }
+  .navbar__comandi { gap: 8px; }
+  .nav-search { width: 42px; height: 42px; }
+  .nav-search svg { width: 18px; height: 18px; }
+  /* Sul telefono la barra non può crescere accanto alla lente: non c'è spazio.
+     Prende la riga della navigazione da sinistra fino ai due pulsanti, coprendo
+     il marchio; i risultati prendono tutta la larghezza sotto. Sono fissati al
+     riquadro di vista e non alla barra perché sulla home la barra è
+     trasparente e ci scorre sotto la fotografia. */
+  .ricerca__barra {
+    position: fixed; transform: none;
+    top: calc(var(--float-pad) + (var(--float-bar) - 40px) / 2);
+    left: var(--gutter); right: calc(var(--gutter) + 100px);
+    width: auto; height: 40px;
+    animation-name: ricerca-apre-stretta;
+  }
+  .ricerca__tendina {
+    position: fixed;
+    top: calc(var(--nav-h) + 4px);
+    left: var(--gutter); right: var(--gutter); width: auto;
+  }
+  .ricerca__esiti { max-height: calc(100svh - var(--nav-h) - 40px); }
+
+  .navbar--float .navbar__inner { padding: 9px var(--gutter); }
+  .navbar--float .navbar__bar { padding: 0; border-radius: 0; background: transparent; border-color: transparent; backdrop-filter: none; }
+  .navbar--float { background: rgba(0, 33, 68, 0.35); }
+
+  /* intestazioni */
+  :root { --home-sovrapposizione: 24px; }
+  .home-hero__title { font-size: 40px; line-height: 1.02; }
+  .home-hero__title br { display: none; }
+  .home-hero__lead { font-size: 17px; }
+  .home-hero__text { gap: 14px; padding: 0 var(--gutter) 44px; }
+  .home-hero__hint { display: none; }
+  .home-sheet { border-radius: 20px 20px 0 0; padding: 34px 0 40px; }
+
+  .page-hero { height: auto; min-height: 300px; display: flex; align-items: flex-end; }
+  .page-hero--unit { height: auto; }
+  .page-hero__body {
+    position: relative; z-index: 1;   /* sopra la velatura */
+    width: 100%; padding: 40px var(--gutter) 32px; gap: 12px;
+  }
+  .page-hero .ph__tag { display: none; }
+  .page-hero__title { font-size: 32px; }
+  .page-hero--unit .page-hero__title { font-size: 30px; }
+  /* logo sopra il titolo, non affiancato */
+  .unit-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .unit-head img { width: 64px; height: 64px; }
+
+  .h1 { font-size: 30px; }
+  .h2, .h2--sm { font-size: 26px; }
+  .h3 { font-size: 20px; }
+  .lead, .prose { font-size: 16.5px; line-height: 1.55; }
+
+  .section, .section--wide { padding-top: 44px; }
+  .section--tight { padding-top: 32px; }
+
+  /* tutte le griglie diventano una colonna */
+  .grid--2, .grid--3, .grid--4 { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .grid--hair { gap: 1px; }
+  .counters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .counters__cell { padding: 20px 18px; }
+  .counters__value { font-size: 40px; }
+
+  /* barre filtri: scorrimento orizzontale, niente a capo */
+  .filterbar__inner {
+    flex-direction: column; align-items: stretch; gap: 10px;
+    padding: 12px var(--gutter);
+  }
+  /* `width: 100%` neutralizza il `margin-left:auto` che la pagina Documenti
+     mette in linea sul secondo gruppo: in colonna un margine automatico
+     vince sullo stretch, il gruppo si dimensiona sui chip senza a capo e
+     trascina l'intera pagina in orizzontale. */
+  .filterbar__group { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; min-width: 0; }
+  .chips {
+    flex-wrap: nowrap; overflow-x: auto; gap: 8px;
+    padding-bottom: 4px; margin: 0 calc(var(--gutter) * -1); padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .filterbar__count { margin-left: 0; }
+
+  /* calendario */
+  .month__head { position: sticky; top: var(--nav-h); z-index: 5; background: var(--bg); padding: 8px 0; }
+  .month__name { font-size: 22px; }
+  .event { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  .event__date { width: 52px; height: 52px; }
+  .event__day { font-size: 19px; }
+  .event__title { font-size: 17px; }
+  .event__note { font-size: 15.5px; }
+  .event__side {
+    flex-direction: row; align-items: baseline; gap: 10px;
+    min-width: 0; width: 100%;
+  }
+  .event__place { text-align: left; }
+
+  /* foto */
+  .album-hero { height: 240px; }
+  .album-hero__body { flex-direction: column; align-items: flex-start; gap: 12px; padding: 0 16px 16px; }
+  .album-hero__title { font-size: 22px; }
+  .album-hero__meta { font-size: 15px; }
+  .album__cover { height: 190px; }
+
+  /* documenti: una riga = un tocco */
+  .doc { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  /* Il titolo prende tutta la riga accanto all'icona, e data e peso vanno a
+     referente sotto. Accanto al titolo lo stringevano a due parole per riga: con la
+     nota non si notava, e i documenti caricati a cartelle intere la nota non ce
+     l'hanno. 58px sono l'icona e lo spazio che la segue. */
+  .doc__main { flex: 1 1 calc(100% - 58px); }
+  .doc__meta { flex-direction: row; align-items: baseline; gap: 10px; min-width: 0; padding-left: 58px; }
+  .doc__actions { width: 100%; }
+  .doc__actions .btn { flex: 1; }
+  .archive-link { padding: 14px 16px; }
+
+  /* unità */
+  .people-card__media { height: 180px; }
+  .history__row { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 16px; }
+  .history__row--head { display: none; }
+  .history__years { font-size: 13.5px; letter-spacing: 0.06em; color: var(--muted); }
+  .unit-switch { flex-direction: column; align-items: stretch; gap: 14px; padding: 20px var(--gutter); }
+  .unit-switch__list { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .unit-switch__list::-webkit-scrollbar { display: none; }
+
+  /* contatti */
+  .leader { flex-wrap: wrap; gap: 12px; padding: 14px 16px; }
+  /* Impilata, la colonna dei recapiti prende tutta la riga: il tetto del 50%
+     che sul largo le impedisce di mangiarsi la scheda qui la dimezzerebbe. */
+  .leader__contacts { align-items: flex-start; width: 100%; max-width: none; }
+  .leader__mail { text-align: left; }
+  .form-panel { padding: 20px; }
+  .form-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .btn-submit { width: 100%; justify-content: center; }
+  .map { height: 220px; }
+
+  /* piede compatto */
+  .footer { padding-top: 34px; }
+  .footer__top { grid-template-columns: minmax(0, 1fr); gap: 26px; padding-bottom: 26px; }
+  .footer__legal { padding: 20px var(--gutter); }
+  .footer__meta { padding: 10px 0 20px; }
+
+  .rows__row { flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; }
+  .rows__val { text-align: left; }
+  .btn, .btn--primary, .btn--yellow, .btn--onnavy { min-height: 48px; }
+}
+
+@media (max-width: 420px) {
+  .counters { grid-template-columns: minmax(0, 1fr); }
+  .brand__name { font-size: 13px; line-height: 1.15; }
+  .brand__sub { font-size: 8.5px; }
+}
+
+/* --- 20. Impaginazioni ricorrenti ---------------------------------------- */
+
+.split {
+  display: grid; gap: 56px; align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.split--intro { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 64px; }
+.split--storia { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+.split--home { grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr); }
+.split--privacy { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; }
+.split--faq { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.35fr); }
+.split--form { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; }
+.split--contatti { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; }
+
+.offset-42 { padding-top: 42px; }
+.offset-44 { padding-top: 44px; }
+
+.headrow {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 32px; flex-wrap: wrap;
+}
+.cta-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 40px; flex-wrap: wrap;
+  max-width: var(--page); margin: 0 auto; padding: 56px var(--gutter);
+}
+.cta-row__buttons { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+/* linea del tempo (Chi siamo) */
+.tl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+.tl__item {
+  display: flex; flex-direction: column; gap: 10px;
+  padding-top: 20px; border-top: 3px solid rgba(255, 255, 255, 0.25);
+}
+.tl__item--first { border-top-color: var(--yellow); }
+.tl__year {
+  font-family: var(--display); font-weight: 800; font-size: 34px;
+  letter-spacing: -0.02em; color: #fff;
+}
+.tl__item--first .tl__year { color: var(--yellow); }
+.tl__item p { font-size: 16.5px; line-height: 1.55; color: rgba(255, 255, 255, 0.78); text-wrap: pretty; }
+/* Con una o due tappe soltanto, la griglia a quattro colonne lascia mezza
+   fascia navy vuota e la sola tappa che c'è finisce schiacciata in un quarto di
+   larghezza: la sezione sembra rimasta a metà, mentre è la storia a essere
+   corta — il gruppo è nato il 4 settembre 2026 e la prima riga è anche l'unica.
+   Riducendo le colonne al numero di tappe il testo respira e la fascia non ha
+   più buchi. Le regole per telefono e tablet, più sotto nel foglio, vincono
+   comunque su questa: hanno la stessa specificità e vengono dopo. */
+.tl:has(> .tl__item:only-child) { grid-template-columns: minmax(0, 620px); }
+.tl:has(> .tl__item:nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* i quattro pilastri */
+.pillar { display: flex; flex-direction: column; gap: 10px; padding: 30px 26px; }
+.pillar__dot { width: 14px; height: 14px; border-radius: 50%; }
+.pillar h3 { font-size: 21px; }
+.pillar p { font-size: 16.5px; line-height: 1.55; color: var(--body); text-wrap: pretty; }
+
+/* le tre fasce in breve */
+.brief {
+  display: flex; flex-direction: column; gap: 12px; padding: 26px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 5px solid var(--line); border-radius: 12px;
+}
+.brief__kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+.brief p { font-size: 17px; line-height: 1.55; color: var(--body); text-wrap: pretty; }
+
+/* referenti */
+.gestorecard {
+  display: flex; flex-direction: column; gap: 12px; padding: 20px 22px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-top: 4px solid var(--line); border-radius: 12px;
+}
+.gestorecard__unit { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.gestorecard__row { display: flex; justify-content: space-between; gap: 14px; font-size: 16.5px; color: var(--body); }
+.gestorecard__row strong { font-weight: 700; color: var(--ink); }
+
+/* ritratti dei gestori */
+.staff__media { height: 220px; }
+.staff__body { display: flex; flex-direction: column; gap: 5px; padding: 20px 22px; }
+.staff__name { font-family: var(--display); font-weight: 700; font-size: 19px; color: var(--ink); }
+.staff__role { font-size: 16px; color: var(--body); }
+
+.archive-link.is-current { border-color: var(--green-600); }
+
+@media (max-width: 1000px) {
+  .tl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 780px) {
+  .split { gap: 28px; }
+  .tl { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .cta-row { padding: 34px var(--gutter); gap: 20px; }
+  .cta-row__buttons { width: 100%; }
+  .cta-row__buttons .btn { flex: 1; }
+  .offset-42, .offset-44 { padding-top: 0; }
+  .staff__media { height: 200px; }
+}
+
+/* --- 21. Pagine di solo testo (legali, manutenzione, 404) ---------------- */
+
+/* Riquadro d'avviso in cima: si usa per dire che un testo è una bozza o che
+   una parte del sito non è ancora completa. Il giallo del sito, come le
+   pastiglie di avviso dell'area riservata. */
+.warnbox {
+  padding: 16px 20px;
+  background: #fff9e0;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--yellow);
+  border-radius: 10px;
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--body);
+  text-wrap: pretty;
+}
+.warnbox strong { color: var(--ink); }
+
+/* Elenco «voce → spiegazione»: è la forma che prendono quasi tutti gli elenchi
+   delle informative, e una <dl> lo dice anche a chi legge con lo screen reader. */
+.deflist { display: flex; flex-direction: column; margin: 0; border-top: 1px solid var(--line); }
+.deflist__row {
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: 22px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.deflist dt {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.deflist dd {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--body);
+  text-wrap: pretty;
+}
+
+/* Nomi tecnici dentro il testo: cookie, attributi, percorsi. Il carattere a
+   spaziatura fissa è già quello del sito, qui serve solo staccarli dal corpo. */
+.deflist code, .prose code, .callout code {
+  padding: 1px 5px;
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* Capoverso staccato dal resto: una precisazione, non il filo del discorso. */
+.callout {
+  padding: 14px 18px;
+  background: var(--bg-alt);
+  border-left: 3px solid var(--rule);
+  border-radius: 0 8px 8px 0;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--body);
+  text-wrap: pretty;
+}
+
+/* Piede delle pagine legali: le altre informative, in fila. */
+.legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-top: 12px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  font-size: 15.5px;
+}
+
+/* --- 22. Preferenze cookie ---------------------------------------------- */
+
+.prefs { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.prefs__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 22px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.prefs__row:last-child { border-bottom: 0; }
+.prefs__name { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--ink); }
+.prefs__text { font-size: 16.5px; line-height: 1.55; color: var(--body); text-wrap: pretty; }
+.prefs__state {
+  flex: none;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--bg-alt);
+  border: 1px solid var(--line-strong);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.prefs__state--on { background: var(--green-600); border-color: var(--green-600); color: #fff; }
+
+/* --- 23. Pagina di un album --------------------------------------------- */
+
+/* Parete di stampe: colonne fisse e altezze alternate, così la griglia non
+   sembra un foglio di calcolo. Le altezze arrivano dal componente. */
+.shots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.shots__cell { border-radius: 10px; }
+
+@media (max-width: 1000px) {
+  .deflist__row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .shots { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 780px) {
+  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .prefs__row { flex-direction: column; gap: 12px; }
+}
+@media (max-width: 420px) {
+  .shots { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- 24. Fotografie vere negli album ------------------------------------ */
+
+/* Copertina con una foto caricata: stessa altezza del segnaposto, immagine
+   ritagliata al centro perché le proporzioni non sono garantite. */
+.album__cover--vera { position: relative; display: block; height: 210px; overflow: hidden; }
+.album__cover--vera img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Cella della parete di stampe. L'altezza la decide la foto, non il CSS: così
+   una verticale resta verticale, e la griglia sembra una parete e non una
+   tabella. `aspect-ratio` viene dagli attributi width/height dell'immagine. */
+.shots__cell--vera { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.shots__cell--vera img {
+  width: 100%; height: auto; display: block;
+  border-radius: 10px; background: var(--bg-alt);
+}
+.shots__cell--vera figcaption {
+  font-size: 14px; line-height: 1.45; color: var(--muted); text-wrap: pretty;
+}
+
+/* Ogni fotografia della parete è un collegamento alla sua versione grande:
+   con JavaScript apre il visore, senza apre l'immagine in una pagina a sé. */
+.shots__apri { display: block; border-radius: 10px; cursor: zoom-in; }
+.shots__apri img { transition: opacity 0.15s ease; }
+.shots__apri:hover img { opacity: 0.88; }
+
+/* --- 24b. Il visore a tutto schermo ------------------------------------- */
+
+/* Un <dialog> modale: il fondo è la pagina resa inerte dal browser. Nero e
+   non blu del sito, perché attorno a una fotografia un colore la tinge. */
+.visore {
+  width: 100vw; height: 100dvh; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0;
+  background: #0b0b0c; color: #fff;
+  overscroll-behavior: contain;
+}
+.visore::backdrop { background: rgba(0, 0, 0, 0.9); }
+.visore[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+
+.visore__barra {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 12px 16px;
+}
+.visore__conto { font-family: var(--mono); font-size: 14px; color: #d6d6d6; }
+.visore__chiudi {
+  min-height: 44px; padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px;
+  background: transparent; color: #fff;
+  font-family: var(--text); font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.visore__chiudi:hover { background: rgba(255, 255, 255, 0.12); }
+
+.visore__foto {
+  margin: 0; min-height: 0; padding: 0 72px 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+}
+/* La foto riempie lo spazio e `contain` la fa stare dentro intera. Con
+   larghezza e altezza `auto` il browser la mostrava alla misura che `srcset`
+   dichiara — su un telefono una verticale occupava mezzo schermo. */
+.visore__foto img {
+  flex: 1 1 auto; min-height: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+}
+.visore__foto figcaption { font-size: 15px; color: #d6d6d6; text-align: center; }
+
+.visore__passo {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  width: 52px; height: 52px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.45); color: #fff;
+  font-size: 32px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.visore__passo:hover { background: rgba(255, 255, 255, 0.16); }
+.visore__passo--prima { left: 12px; }
+.visore__passo--dopo { right: 12px; }
+
+@media (max-width: 780px) {
+  /* sul telefono si scorre col dito: i pulsanti restano, più piccoli e in
+     basso, per chi non lo sa */
+  .visore__foto { padding: 0 8px 76px; }
+  .visore__passo { top: auto; bottom: 14px; transform: none; width: 48px; height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shots__apri img { transition: none; }
+}
+
+/* Documento annunciato ma senza file: la pastiglia del formato è grigia e non
+   promette un PDF che non c'è. */
+.doc__icon--assente { background: var(--muted-3); }

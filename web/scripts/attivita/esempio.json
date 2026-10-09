@@ -1,0 +1,27 @@
+[
+  {
+    "titolo": "Label 1",
+    "data": "2026-09-27",
+    "tipo": "festa",
+    "unita": ["gruppo"],
+    "luogo": "Label",
+    "durata": "Label",
+    "nota": "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "titolo": "Label 2",
+    "data": "2026-10-04",
+    "tipo": "riunione",
+    "unita": ["u3"],
+    "luogo": "Label",
+    "durata": "Label"
+  },
+  {
+    "titolo": "Label 3",
+    "data": "2026-10-24",
+    "tipo": "uscita",
+    "unita": ["u3"],
+    "luogo": "Label",
+    "durata": "Label"
+  }
+]

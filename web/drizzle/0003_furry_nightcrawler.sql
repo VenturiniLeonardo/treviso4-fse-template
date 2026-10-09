@@ -1,0 +1,1 @@
+ALTER TABLE `foto` ADD `derivate_il` text;

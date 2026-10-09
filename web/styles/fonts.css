@@ -1,0 +1,17 @@
+/* Caratteri serviti dal nostro dominio, non da Google Fonts (§04 del piano).
+   `next/font` li scarica in fase di compilazione e li pubblica sotto
+   /_next/static/media: nessuna richiesta di rete verso terzi a runtime, e una
+   richiesta bloccante in meno.
+
+   Le tre variabili sono le stesse che site.css e admin.css già usano: qui si
+   sostituisce soltanto la sorgente del carattere, non una regola di stile.
+   --display e --text restano due variabili anche se oggi sono lo stesso
+   carattere, Archivo: i titoli e il testo continuano a potersi separare con
+   una riga, senza toccare le regole che le usano.
+   Questo file va importato DOPO site.css (vedi app/layout.tsx). */
+
+:root {
+  --display: var(--font-archivo), 'Helvetica Neue', Arial, sans-serif;
+  --text: var(--font-archivo), system-ui, -apple-system, Segoe UI, sans-serif;
+  --mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
